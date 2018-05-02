@@ -28,7 +28,66 @@ namespace MachFive
     {
     }
 
-    //- statement nodes -----------------------------------------------------------
+//- operation nodes -----------------------------------------------------------
+
+    class AddIntegerNode : Node
+    {
+    }
+
+    class SubtractIntegerNode : Node
+    {
+    }
+
+    class MultiplyIntegerNode : Node
+    {
+    }
+
+    class DivideIntegerNode : Node
+    {
+    }
+
+    class ModIntegerNode : Node
+    {
+    }
+
+    class NegateIntegerNode : Node
+    {
+    }
+
+    class NotIntegerNode : Node
+    {
+    }
+
+    class AndIntegerNode : Node
+    {
+    }
+
+    class OrIntegerNode : Node
+    {
+    }
+
+    class XorIntegerNode : Node
+    {
+    }
+
+    class ShiftLeftIntegerNode : Node
+    {
+    }
+
+    class ShiftRightIntegerNode : Node
+    {
+    }
+
+    class IncrementIntegerNode : Node
+    {
+    }
+
+    class DecrementIntegerNode : Node
+    {
+    }
+
+
+//- statement nodes -----------------------------------------------------------
 
     class StatementListNode : Node
     {
