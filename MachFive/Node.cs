@@ -86,6 +86,26 @@ namespace MachFive
     {
     }
 
+    class AddFloatNode : Node
+    {
+    }
+
+
+    class SubtractFloatNode : Node
+    {
+    }
+
+    class MulitplyFloatNode : Node
+    {
+    }
+
+    class DivideFloatNode : Node
+    {
+    }
+
+    class NegateFloatNode : Node
+    {
+    }
 
 //- statement nodes -----------------------------------------------------------
 
