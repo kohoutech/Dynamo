@@ -26,8 +26,15 @@ namespace MachFive
 {
     class MachFive
     {
+        Node ASTTree;
+
         static void Main(string[] args)
         {
+        }
+
+        public void GenerateCode(Node astTree)
+        {
+            astTree.GenerateCode();
         }
     }
 }

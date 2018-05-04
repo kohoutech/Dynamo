@@ -26,6 +26,8 @@ namespace MachFive
 {
     class Node
     {
+        public virtual void GenerateCode () {
+        }
     }
 
 //- operation nodes -----------------------------------------------------------
@@ -90,7 +92,6 @@ namespace MachFive
     {
     }
 
-
     class SubtractFloatNode : Node
     {
     }
@@ -111,6 +112,15 @@ namespace MachFive
 
     class StatementListNode : Node
     {
+        List<Node> statementList;
+
+        public override void GenerateCode()
+        {
+            foreach (Node stmt in statementList)
+            {
+                stmt.GenerateCode();
+            }
+        }
     }
 
     class IfNode : Node
