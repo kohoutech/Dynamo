@@ -24,30 +24,7 @@ using System.Text;
 
 namespace MachFive
 {
-    class MachFive
+    class Module
     {
-        static MachFive machFive;
-
-        Node ASTTree;
-        Module mainModule;
-        Linker linker;
-
-        static void Main(string[] args)
-        {
-            machFive = new MachFive();
-            machFive.generate();
-        }
-
-        public void generate()
-        {
-            GenerateCode(ASTTree);
-            linker = new Linker();
-            linker.BuildImage("test.exe");
-        }
-
-        public void GenerateCode(Node astTree)
-        {
-            astTree.GenerateCode();
-        }
     }
 }

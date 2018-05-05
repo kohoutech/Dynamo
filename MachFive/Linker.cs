@@ -22,32 +22,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Origami.Win32;
+
 namespace MachFive
 {
-    class MachFive
+    public class Linker
     {
-        static MachFive machFive;
+        public Win32Exe exeImage;
 
-        Node ASTTree;
-        Module mainModule;
-        Linker linker;
-
-        static void Main(string[] args)
+        public void BuildImage(String filename) 
         {
-            machFive = new MachFive();
-            machFive.generate();
-        }
-
-        public void generate()
-        {
-            GenerateCode(ASTTree);
-            linker = new Linker();
-            linker.BuildImage("test.exe");
-        }
-
-        public void GenerateCode(Node astTree)
-        {
-            astTree.GenerateCode();
         }
     }
 }
