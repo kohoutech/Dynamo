@@ -57,6 +57,7 @@
     <Compile Include="WIN32\CodeSection.cs" />
     <Compile Include="WIN32\ResourceParser.cs" />
     <Compile Include="WIN32\Section.cs" />
+    <Compile Include="WIN32\SourceFile.cs" />
     <Compile Include="WIN32\Win32Exe.cs" />
     <Compile Include="WIN32\Win32File.cs" />
     <Compile Include="WIN32\Win32Header.cs" />
@@ -64,9 +65,6 @@
   <ItemGroup>
     <None Include="ASM32\README.md" />
     <None Include="WIN32\README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="WIN32\docs\index.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
