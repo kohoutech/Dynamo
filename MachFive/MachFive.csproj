@@ -50,6 +50,7 @@
     <Compile Include="ASM32\Instruction87.cs" />
     <Compile Include="ASM32\Operand.cs" />
     <Compile Include="Linker.cs" />
+    <Compile Include="Loader.cs" />
     <Compile Include="MachFive.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="Node.cs" />
