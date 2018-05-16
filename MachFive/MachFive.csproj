@@ -62,10 +62,7 @@
     <Compile Include="WIN32\Win32Exe.cs" />
     <Compile Include="WIN32\Win32File.cs" />
     <Compile Include="WIN32\Win32Header.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ASM32\README.md" />
-    <None Include="WIN32\README.md" />
+    <Compile Include="WIN32\Win32Obj.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
