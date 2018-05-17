@@ -100,7 +100,7 @@ namespace Origami.Asm32
             if (b == 0x0f)
             {
                 uint nb = getNextByte();
-                //op0f(nb);
+                op0f(nb);
             }
             else if ((b >= 0x00) && (b <= 0x3f))
             {
@@ -1669,73 +1669,75 @@ namespace Origami.Asm32
 
 //- two byte instructions -----------------------------------------------------
 
-//        public void op0f(uint b)
-//        {
-//            if ((b >= 0x00) && (b <= 0x0f))
-//            {
-//                op0f0x(b);
-//            }
-//            else if ((b >= 0x10) && (b <= 0x1f))
-//            {
-//                op0f1x(b);
-//            }
-//            else if ((b >= 0x20) && (b <= 0x2f))
-//            {
-//                op0f2x(b);
-//            }
-//            else if ((b >= 0x30) && (b <= 0x3f))
-//            {
-//                op0f3x(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0x40) && (b <= 0x4f))
-//            {
-//                op0f4x(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0x50) && (b <= 0x5f))
-//            {
-//                op0f5x(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0x60) && (b <= 0x6f))
-//            {
-//                op0f6x(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0x70) && (b <= 0x7f))
-//            {
-//                op0f7x(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0x80) && (b <= 0x8f))
-//            {
-//                op0f8x(b);
-//            }
-//            else if ((b >= 0x90) && (b <= 0x9f))
-//            {
-//                op0f9x(b);
-//            }
-//            else if ((b >= 0xa0) && (b <= 0xaf))
-//            {
-//                op0fax(b);
-//            }
-//            else if ((b >= 0xb0) && (b <= 0xbf))
-//            {
-//                op0fbx(b);
-//            }
-//            else if ((b >= 0xc0) && (b <= 0xcf))
-//            {
-//                op0fcx(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0xd0) && (b <= 0xdf))
-//            {
-//                op0fdx(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0xe0) && (b <= 0xef))
-//            {
-//                op0fex(b);                      //not implemented yet
-//            }
-//            else if ((b >= 0xf0) && (b <= 0xff))
-//            {
-//                op0ffx(b);                      //not implemented yet
-//            }
-//        }
+        public Instruction op0f(uint b)
+        {
+            Instruction instr = null;
+            if ((b >= 0x00) && (b <= 0x0f))
+            {
+               instr = op0f0x(b);
+            }
+            else if ((b >= 0x10) && (b <= 0x1f))
+            {
+                instr = op0f1x(b);
+            }
+            else if ((b >= 0x20) && (b <= 0x2f))
+            {
+                instr = op0f2x(b);
+            }
+            else if ((b >= 0x30) && (b <= 0x3f))
+            {
+                instr = op0f3x(b);                      //not implemented yet
+            }
+            else if ((b >= 0x40) && (b <= 0x4f))
+            {
+                instr = op0f4x(b);                      //not implemented yet
+            }
+            else if ((b >= 0x50) && (b <= 0x5f))
+            {
+                instr = op0f5x(b);                      //not implemented yet
+            }
+            else if ((b >= 0x60) && (b <= 0x6f))
+            {
+                instr = op0f6x(b);                      //not implemented yet
+            }
+            else if ((b >= 0x70) && (b <= 0x7f))
+            {
+                instr = op0f7x(b);                      //not implemented yet
+            }
+            else if ((b >= 0x80) && (b <= 0x8f))
+            {
+                instr = op0f8x(b);
+            }
+            else if ((b >= 0x90) && (b <= 0x9f))
+            {
+                instr = op0f9x(b);
+            }
+            else if ((b >= 0xa0) && (b <= 0xaf))
+            {
+                instr = op0fax(b);
+            }
+            else if ((b >= 0xb0) && (b <= 0xbf))
+            {
+                instr = op0fbx(b);
+            }
+            else if ((b >= 0xc0) && (b <= 0xcf))
+            {
+                instr = op0fcx(b);                      //not implemented yet
+            }
+            else if ((b >= 0xd0) && (b <= 0xdf))
+            {
+                instr = op0fdx(b);                      //not implemented yet
+            }
+            else if ((b >= 0xe0) && (b <= 0xef))
+            {
+                instr = op0fex(b);                      //not implemented yet
+            }
+            else if ((b >= 0xf0) && (b <= 0xff))
+            {
+                instr = op0ffx(b);                      //not implemented yet
+            }
+            return instr;
+        }
 
 //        readonly String[] opcode0f0x = { "???", "???", "lar", "lsl", "???", "syscall", "clts", "sysret",
 //                                         "invd", "wbinvd", "???", "ud2", "???", "nop", "femms", "???"};
@@ -1749,8 +1751,10 @@ namespace Origami.Asm32
 //        readonly int[] opcount0fd8 = { 1, 0, 1, 1, 0, 0, 1, 2 };
 //        readonly String[] opcode0f01f8 = { "swapgs", "rdtscp", "???", "???", "???", "???", "???", "???" };
 
-//        public void op0f0x(uint b)
-//        {
+        public Instruction  op0f0x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
 //            opcode = opcode0f0x[(b % 0x10)];
 //            opcount = 0;
 //            uint bhi = (b / 0x08) % 0x08;   //--bb b--- 
@@ -1856,15 +1860,17 @@ namespace Origami.Asm32
 //                    opcount = 2;
 //                    break;
 //            }
-//        }
+        }
 
 //        readonly String[] opcode0f1x = { "movups", "movups", "movlps", "movlps", "unpcklps", "unpckhps", "movhps", "movhps",
 //                                         "???", "???", "???", "???", "???", "???", "???", "???"};
 //        readonly String[] opcode0f18 = { "prefetchnta", "prefetcht0", "prefetcht1", "prefetcht2", "???", "???", "???", "???" };
 
         
-//        public void op0f1x(uint b)
-//        {
+        public Instruction  op0f1x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
 //            opcode = opcode0f1x[(b % 0x10)];
 //            opcount = 0;
 //            uint bhi = (b / 0x08) % 0x08;   //--bb b--- (top two bits should = 0)
@@ -1935,14 +1941,16 @@ namespace Origami.Asm32
 //                    break;
 
 //            }
-//        }
+        }
 
 //        readonly String[] opcode0f2x = { "???", "???", "???", "???", "???", "???", "???", "???",
 //                                         "movaps", "movaps", "cvtpi2ps", "movntps", "cvttps2pi", "cvtps2pi", "ucomiss", "comiss"};
                                    
 
-//        public void op0f2x(uint b)
-//        {
+        public Instruction  op0f2x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
 //            opcode = opcode0f2x[(b % 0x10)];
 //            opcount = 0;
 //            uint bhi = (b / 0x08) % 0x08;   //--bb b--- (top two bits should = 0)
@@ -2001,53 +2009,67 @@ namespace Origami.Asm32
 //                    break;
 
 //            }
-//        }
+        }
 
-//        public void op0f3x(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
-//        public void op0f4x(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
-//        public void op0f5x(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
-//        public void op0f6x(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
-//        public void op0f7x(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
+        public Instruction  op0f3x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
+        public Instruction  op0f4x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
+        public Instruction  op0f5x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
+        public Instruction  op0f6x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
+        public Instruction  op0f7x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
 
 //        readonly String[] opcode0f8x = { "jo", "jno", "jb", "jae", "je", "jne", "jbe", "ja", "js", "jns", "jp", "jnp", "jl", "jge", "jle", "jg" };
 
-//        public void op0f8x(uint b)
-//        {
+        public Instruction  op0f8x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
 //            opcode = opcode0f8x[(b % 0x10)];
 //            op1 = rel32();
 //            opcount = 1;
-//        }
+        }
 
 //        readonly String[] opcode0f9x = { "seto", "setno", "setb", "setae", "sete", "setne", "setbe", "seta", 
 //                                         "sets", "setns", "setp", "setnp", "setl", "setge", "setle", "setg" };
 
-//        public void op0f9x(uint b)
-//        {
+        public Instruction  op0f9x(uint b)
+        {
+            Instruction instr = null;
+            return instr;
 //            opcode = opcode0f9x[(b % 0x10)];
 //            uint modrm = getNextByte();
 //            op1 = getModrm(modrm, OPSIZE.Byte);
 //            opcount = 1;
-//        }
+        }
 
 //        readonly String[] opcode0fax = { "push", "pop", "cpuid", "bt", "shld", "shld", "xbts", "ibts", 
 //                                         "push", "pop", "rsm", "bts", "shrd", "shrd", "???", "imul" };
@@ -2055,8 +2077,10 @@ namespace Origami.Asm32
 //        readonly OPSIZE[] size0fae = { OPSIZE.None, OPSIZE.None, OPSIZE.DWord, OPSIZE.DWord, OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.None };
         
 
-//        public void op0fax(uint b)
-//        {
+        public Instruction  op0fax(uint b)
+        {
+            Instruction instr = null;
+            return instr;
 //            opcode = opcode0fax[(b % 0x10)];
 //            opcount = 0;
 //            uint modrm = 0;
@@ -2130,8 +2154,10 @@ namespace Origami.Asm32
 //        readonly OPSIZE[] size0fbx = { OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.Byte, OPSIZE.Word, 
 //                                       OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.DWord, OPSIZE.DWord, OPSIZE.Byte, OPSIZE.Word };
 
-//        public void op0fbx(uint b)
-//        {
+        public Instruction op0fbx(uint b)
+        {
+            Instruction instr = null;
+            return instr;
 //            opcode = opcode0fbx[(b % 0x10)];
 //            opcount = 0;
 //            uint modrm = 0;
@@ -2189,27 +2215,36 @@ namespace Origami.Asm32
 //                    break;
                 
 //            }
-//        }
-//        public void op0fcx(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
-//        public void op0fdx(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
-//        public void op0fex(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
-//        public void op0ffx(uint b)
-//        {
-//            opcode = "0F instr";
-//            opcount = 0;
-//        }
+        }
+
+        public Instruction op0fcx(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
+        public Instruction op0fdx(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
+        public Instruction op0fex(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
+        public Instruction op0ffx(uint b)
+        {
+            Instruction instr = null;
+            return instr;
+            opcode = "0F instr";
+            opcount = 0;
+        }
 
 //- registers -----------------------------------------------------------------
        
