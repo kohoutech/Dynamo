@@ -1754,7 +1754,6 @@ namespace Origami.Asm32
         public Instruction  op0f0x(uint b)
         {
             Instruction instr = null;
-            return instr;
 //            opcode = opcode0f0x[(b % 0x10)];
 //            opcount = 0;
 //            uint bhi = (b / 0x08) % 0x08;   //--bb b--- 
@@ -1860,6 +1859,8 @@ namespace Origami.Asm32
 //                    opcount = 2;
 //                    break;
 //            }
+                        return instr;
+
         }
 
 //        readonly String[] opcode0f1x = { "movups", "movups", "movlps", "movlps", "unpcklps", "unpckhps", "movhps", "movhps",
@@ -1870,7 +1871,6 @@ namespace Origami.Asm32
         public Instruction  op0f1x(uint b)
         {
             Instruction instr = null;
-            return instr;
 //            opcode = opcode0f1x[(b % 0x10)];
 //            opcount = 0;
 //            uint bhi = (b / 0x08) % 0x08;   //--bb b--- (top two bits should = 0)
@@ -1941,6 +1941,7 @@ namespace Origami.Asm32
 //                    break;
 
 //            }
+                        return instr;
         }
 
 //        readonly String[] opcode0f2x = { "???", "???", "???", "???", "???", "???", "???", "???",
@@ -1950,7 +1951,6 @@ namespace Origami.Asm32
         public Instruction  op0f2x(uint b)
         {
             Instruction instr = null;
-            return instr;
 //            opcode = opcode0f2x[(b % 0x10)];
 //            opcount = 0;
 //            uint bhi = (b / 0x08) % 0x08;   //--bb b--- (top two bits should = 0)
@@ -2009,42 +2009,37 @@ namespace Origami.Asm32
 //                    break;
 
 //            }
+                        return instr;
         }
 
         public Instruction  op0f3x(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
+
         public Instruction  op0f4x(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
+
         public Instruction  op0f5x(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
+
         public Instruction  op0f6x(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
+
         public Instruction  op0f7x(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
 
 //        readonly String[] opcode0f8x = { "jo", "jno", "jb", "jae", "je", "jne", "jbe", "ja", "js", "jns", "jp", "jnp", "jl", "jge", "jle", "jg" };
@@ -2052,23 +2047,24 @@ namespace Origami.Asm32
         public Instruction  op0f8x(uint b)
         {
             Instruction instr = null;
-            return instr;
 //            opcode = opcode0f8x[(b % 0x10)];
 //            op1 = rel32();
 //            opcount = 1;
+            return instr;
+
         }
 
 //        readonly String[] opcode0f9x = { "seto", "setno", "setb", "setae", "sete", "setne", "setbe", "seta", 
 //                                         "sets", "setns", "setp", "setnp", "setl", "setge", "setle", "setg" };
 
-        public Instruction  op0f9x(uint b)
+        public Instruction op0f9x(uint b)
         {
             Instruction instr = null;
-            return instr;
 //            opcode = opcode0f9x[(b % 0x10)];
 //            uint modrm = getNextByte();
 //            op1 = getModrm(modrm, OPSIZE.Byte);
 //            opcount = 1;
+                        return instr;
         }
 
 //        readonly String[] opcode0fax = { "push", "pop", "cpuid", "bt", "shld", "shld", "xbts", "ibts", 
@@ -2077,10 +2073,9 @@ namespace Origami.Asm32
 //        readonly OPSIZE[] size0fae = { OPSIZE.None, OPSIZE.None, OPSIZE.DWord, OPSIZE.DWord, OPSIZE.None, OPSIZE.None, OPSIZE.None, OPSIZE.None };
         
 
-        public Instruction  op0fax(uint b)
+        public Instruction op0fax(uint b)
         {
             Instruction instr = null;
-            return instr;
 //            opcode = opcode0fax[(b % 0x10)];
 //            opcount = 0;
 //            uint modrm = 0;
@@ -2147,7 +2142,8 @@ namespace Origami.Asm32
 //                    break;
 
 //            }
-//        }
+            return instr;
+        }
 
 //        readonly String[] opcode0fbx = { "cmpxchg", "cmpxchg", "lss", "btr", "lfs", "lgs", "movzx", "movzx", 
 //                                         "jmpe", "???", "???", "btc", "bsf", "bsr", "movsx", "movsx" };
@@ -2157,7 +2153,6 @@ namespace Origami.Asm32
         public Instruction op0fbx(uint b)
         {
             Instruction instr = null;
-            return instr;
 //            opcode = opcode0fbx[(b % 0x10)];
 //            opcount = 0;
 //            uint modrm = 0;
@@ -2215,35 +2210,31 @@ namespace Origami.Asm32
 //                    break;
                 
 //            }
+            return instr;
         }
 
         public Instruction op0fcx(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
+
         public Instruction op0fdx(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
+
         public Instruction op0fex(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
+
         public Instruction op0ffx(uint b)
         {
             Instruction instr = null;
             return instr;
-            opcode = "0F instr";
-            opcount = 0;
         }
 
 //- registers -----------------------------------------------------------------

@@ -25,10 +25,11 @@ using System.Drawing;
 using System.IO;
 
 //https://en.wikibooks.org/wiki/X86_Disassembly/Windows_Executable_Files
+//https://msdn.microsoft.com/en-us/library/ms648009(v=vs.85).aspx
 
 namespace Origami.Win32
 {
-    public class ResourceParser
+    public class ResourceSection : Section
     {
         public Section res;
         public SourceFile source;
@@ -38,7 +39,63 @@ namespace Origami.Win32
         public int curNodeType;
 
 
-        public ResourceParser(SourceFile _source, Section _rsrc)
+        
+        List<ResAccelerator> accelerators;
+        List<ResBitmap> bitmaps;
+        List<ResCursor> cursors;
+        List<ResDialog> dialogs;
+        List<ResFont> fonts;
+RT_FONTDIR
+MAKEINTRESOURCE(7)
+
+	
+
+Font directory resource.
+
+RT_GROUP_CURSOR
+MAKEINTRESOURCE((ULONG_PTR)(RT_CURSOR) + 11)
+
+	
+
+Hardware-independent cursor resource.
+
+RT_GROUP_ICON
+MAKEINTRESOURCE((ULONG_PTR)(RT_ICON) + 11)
+
+	
+
+Hardware-independent icon resource.
+
+RT_ICON
+MAKEINTRESOURCE(3)
+
+	
+
+Hardware-dependent icon resource.
+
+RT_MENU
+MAKEINTRESOURCE(4)
+
+	
+
+Menu resource.
+
+RT_RCDATA
+MAKEINTRESOURCE(10)
+
+	
+
+Application-defined resource (raw data).
+
+RT_STRING
+MAKEINTRESOURCE(6)
+
+	
+
+String-table entry.
+
+
+        public ResourceSection(SourceFile _source, Section _rsrc)
         {
             source = _source;
             res = _rsrc;
@@ -56,7 +113,6 @@ namespace Origami.Win32
             //rootNode.dump();
         }
 
-        //https://msdn.microsoft.com/en-us/library/ms648009(v=vs.85).aspx
         String[] NODETYPES = {
             "?", "Cursor", "Bitmap", "Icon", "Menu", "Dialog", "String Table", "Font Directory", "Font",           //0-8
             "Accelerator", "User Data", "Message Table", "Cursor Group", "?", "Icon Group", "?", "Version",        //9-16
