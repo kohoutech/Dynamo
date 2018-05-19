@@ -90,6 +90,10 @@ namespace Origami.Win32
         public byte[] data;
 
         //cons
+        public Section()
+        {
+        }
+
         public Section(int _secnum, String _sectionName, uint _memsize, uint _memloc, uint _filesize, uint _fileloc, 
             uint _pRelocations, uint _pLinenums, int _relocCount, int _linenumCount, uint _flags)
         {
