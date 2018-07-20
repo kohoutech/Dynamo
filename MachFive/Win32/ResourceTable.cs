@@ -41,48 +41,65 @@ namespace Origami.Win32
         //I could make these subclass specific lists (ie List<ResBitmap> instead of List<ResourceData>)
         //but you can't cast them back to List<ResourceData>, which would then require 13 versions of
         //the same helper functions
-        public List<ResourceData> accelerators;
-        public List<ResourceData> bitmaps;
         public List<ResourceData> cursors;
-        public List<ResourceData> dialogs;
-        public List<ResourceData> fonts;
-        public List<ResourceData> fontDirectories;
-        public List<ResourceData> cursorGroups;
-        public List<ResourceData> iconGroups;
+        public List<ResourceData> bitmaps;
         public List<ResourceData> icons;
         public List<ResourceData> menus;
+        public List<ResourceData> dialogs;
         public List<ResourceData> stringtable;
-        public List<ResourceData> versions;
+        public List<ResourceData> fontDirectories;
+        public List<ResourceData> fonts;
+        public List<ResourceData> accelerators;
         public List<ResourceData> userData;
+        public List<ResourceData> cursorGroups;
+        public List<ResourceData> iconGroups;
+        public List<ResourceData> versions;
 
+        //the exe file side
         public byte[] data;                 //the raw data from/to a resource section in an exe file
         public uint imageBase;              //exe image base, this an resourceRVA determine where specific records would be
         public uint resourceRVA;            //located when the resource section is loaded into memory, for parsing purposes
 
         public ResourceTable()
         {
-            accelerators = new List<ResourceData>();
-            bitmaps = new List<ResourceData>();
             cursors = new List<ResourceData>();
-            dialogs = new List<ResourceData>();
-            fonts = new List<ResourceData>();
-            fontDirectories = new List<ResourceData>();
-            cursorGroups = new List<ResourceData>();
-            iconGroups = new List<ResourceData>();
+            bitmaps = new List<ResourceData>();
             icons = new List<ResourceData>();
             menus = new List<ResourceData>();
+            dialogs = new List<ResourceData>();
             stringtable = new List<ResourceData>();
-            versions = new List<ResourceData>();
+            fontDirectories = new List<ResourceData>();
+            fonts = new List<ResourceData>();
+            accelerators = new List<ResourceData>();
             userData = new List<ResourceData>();
+            cursorGroups = new List<ResourceData>();
+            iconGroups = new List<ResourceData>();
+            versions = new List<ResourceData>();
 
             data = null;
             imageBase = 0;
             resourceRVA = 0;
         }
 
-//- loading in ----------------------------------------------------------------
+//- loading in from exe -------------------------------------------------------
 
         uint[] resIdNameValues;         //for holding id/name values during the parse descent
+        List<ResData> cursorItems;
+        List<ResData> iconItems;
+
+        //loading an exe file gives the raw resource data, this parses it into resource objs & adds them to the matching list
+        public void parseData()
+        {
+            resIdNameValues = new uint[3];
+            cursorItems = new List<ResData>();
+            iconItems = new List<ResData>();
+
+            SourceFile source = new SourceFile(data);   //source file pts to resource table's raw data buf
+            parseResourceDirectory(source, 0);          //start on level 0
+
+            parseCursorGroups();        //having stored icon & cursor resource data during the parse
+            parseIconGroups();          //now create icon & cursor list entries from this data and the icon/cursor group entries
+        }
 
         //recursively descend through resource directory structure
         //resource directories are 3 levels deep by Microsoft convention:
@@ -161,69 +178,286 @@ namespace Origami.Win32
             switch (restype)
             {
                 case 1:
-                    addCursor(resid, resname, reslang, resdata);
+                    ResData curdata = new ResData(resid, resname, reslang, resdata);
+                    cursorItems.Add(curdata);                    
                     break;
 
                 case 2:
-                    addBitmap(resid, resname, reslang, resdata);
+                    Bitmap bmp = ResBitmap.parseData(resdata);
+                    addBitmap(resid, resname, reslang, bmp);
+                    getDataItem(bitmaps, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 3:
-                    addIcon(resid, resname, reslang, resdata);
+                    ResData icondata = new ResData(resid, resname, reslang, resdata);
+                    iconItems.Add(icondata);                    
                     break;
 
                 case 4:
-                    addMenu(resid, resname, reslang, resdata);
+                    addMenu(resid, resname, reslang, resdata);                    
+                    //List<String> menu = ResMenu.parseData(resdata);
+                    //addMenu(resid, resname, reslang, menu);                    
+                    getDataItem(menus, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 5:
-                    addDialog(resid, resname, reslang, resdata);
+                    addDialog(resid, resname, reslang, resdata);                    
+                    //List<String> dlg = ResDialog.parseData(resdata);
+                    //addDialog(resid, resname, reslang, dlg);                    
+                    getDataItem(dialogs, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
-                case 6:
-                    addStringTable(resid, resname, reslang, resdata);
+                case 6: 
+                    List<String> strings = ResStringTable.parseData(resdata);
+                    addStringTable(resid, resname, reslang, strings);
+                    getDataItem(stringtable, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 7:
-                    addFontDirectory(resid, resname, reslang, resdata);
+                    addFontDirectory(resid, resname, reslang, resdata);                    
+                    getDataItem(fontDirectories, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 8:
                     addFont(resid, resname, reslang, resdata);
+                    getDataItem(fonts, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 9:
-                    addAccelerator(resid, resname, reslang, resdata);
+                    List<String> accel = ResAccelerator.parseData(resdata);
+                    addAccelerator(resid, resname, reslang, accel);
+                    getDataItem(accelerators, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 10:
                     addUserData(resid, resname, reslang, resdata);
+                    getDataItem(userData, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 12:
-                    addCursorGroup(resid, resname, reslang, resdata);
+                    ResImageGroupData cg = ResImageGroupData.parseData(resdata);
+                    addCursorGroup(resid, resname, reslang, cg);
+                    getDataItem(cursorGroups, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 14:
-                    addIconGroup(resid, resname, reslang, resdata);
+                    ResImageGroupData ig = ResImageGroupData.parseData(resdata);
+                    addIconGroup(resid, resname, reslang, ig);
+                    getDataItem(iconGroups, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 case 16:
                     addVersion(resid, resname, reslang, resdata);
+
+                    //List<String> version = ResVersion.parseData(resdata);
+                    //addVersion(resid, resname, reslang, version);
+                    getDataItem(versions, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
 
                 default:
                     addUserData(resid, resname, reslang, resdata);
+                    getDataItem(userData, resid, resname).getItem(reslang).dataBuf = resdata;
                     break;
             }
         }
 
-        public void parseData()
-        {
-            resIdNameValues = new uint[3];
+//- icon loading --------------------------------------------------------------
 
-            SourceFile source = new SourceFile(data);   //source file pts to resource table's raw data buf
-            parseResourceDirectory(source, 0);          //start on level 0
+        //we create an .ico file in memory for icon resources
+        private byte[] buildIconFile(ResImageGroupData idata)
+        {
+            //build .ico file header
+            byte[] hdrbytes = { 0, 0, 1, 0, 0, 0 };
+            hdrbytes[4] = (byte)(idata.entries.Count % 0x100);
+            hdrbytes[5] = (byte)(idata.entries.Count / 0x100);
+
+            //build .ico data directory
+            int datapos = 6 + (0x10 * idata.entries.Count);
+            byte[] dirbytes = new byte[0x10 * idata.entries.Count];
+            int dirpos = 0;
+            for (int i = 0; i < idata.entries.Count; i++)
+            {
+                ResImageGroupDataEntry ientry = idata.entries[i];
+                dirbytes[dirpos++] = (byte)ientry.bWidth;
+                dirbytes[dirpos++] = (byte)ientry.bHeight;
+                dirbytes[dirpos++] = (byte)ientry.bColorCount;
+                dirbytes[dirpos++] = 0;
+                dirbytes[dirpos++] = (byte)(ientry.wPlanes % 0x100);
+                dirbytes[dirpos++] = (byte)(ientry.wPlanes / 0x100);
+                dirbytes[dirpos++] = (byte)(ientry.wBitCount % 0x100);
+                dirbytes[dirpos++] = (byte)(ientry.wBitCount / 0x100);
+                byte[] sizebytes = BitConverter.GetBytes(ientry.dwBytesInRes);
+                Array.Copy(sizebytes, 0, dirbytes, dirpos, 4);
+                byte[] posbytes = BitConverter.GetBytes(datapos);
+                Array.Copy(posbytes, 0, dirbytes, dirpos + 4, 4);
+                dirpos += 8;
+                datapos += (int)ientry.dwBytesInRes;
+            }
+
+            byte[] iconbytes = new byte[datapos];                       //total .ico data buf
+            Array.Copy(hdrbytes, 0, iconbytes, 0, 6);
+            Array.Copy(dirbytes, 0, iconbytes, 6, dirbytes.Length);     //copy the .ico header to it
+
+            //append icon data for each icon in directory
+            datapos = 6 + (0x10 * idata.entries.Count);
+            ResData image = null;
+            for (int i = 0; i < idata.entries.Count; i++)
+            {
+                ResImageGroupDataEntry ientry = idata.entries[i];
+                foreach (ResData imagedata in iconItems)                 //find the matching icon data
+                {
+                    if (imagedata.id == ientry.nID)
+                    {
+                        image = imagedata;
+                        break;
+                    }
+                }
+                if (image != null)
+                {
+                    Array.Copy(image.data, 0, iconbytes, datapos, image.data.Length);     //and add it to the data buf
+                    datapos += image.data.Length;
+                }
+            }
+            return iconbytes;
+        }
+
+        private void createIconResources(ResImageGroupData idata, byte[] iconbytes)
+        {
+            //now we've re-created the .ico file as a memory stream
+            //extract each icon from it by the icon dimensions from the data directory
+            MemoryStream ms = new MemoryStream(iconbytes);
+            ResData image = null;
+            for (int i = 0; i < idata.entries.Count; i++)
+            {
+                ResImageGroupDataEntry ientry = idata.entries[i];
+                ms.Position = 0;
+                Icon iconRes = new Icon(ms, (int)ientry.bWidth, (int)ientry.bHeight);       //get the icon
+                ientry.image = iconRes;                                                      //link it to this res obj
+                foreach (ResData imagedata in iconItems)
+                {
+                    if (imagedata.id == ientry.nID)
+                    {
+                        image = imagedata;
+                        break;
+                    }
+                }
+                //and add it to the ICON resource list as well
+                if (image != null)
+                {
+                    addIcon(image.id, image.name, image.lang, iconRes);
+                    getDataItem(icons, image.id, image.name).getItem(image.lang).dataBuf = image.data;
+                }
+            }
+        }
+
+        //like bmp files (see below) we build an .ico file in memory, and then create an Icon obj from it
+        //the complication here is (unlike bitmap resources) the data is split between ICON and ICONGROUP resources
+        //so we've stored all the ICON resource data while parsing the resource data & now join head to body
+        private void parseIconGroups()
+        {
+            foreach (ResIconGroup ig in iconGroups)
+            {
+                foreach (ResourceItem item in ig.items)
+                {
+                    ResImageGroupData idata = (ResImageGroupData)item.item;     //this contains the .ico file header data
+                    byte[] iconbytes = buildIconFile(idata);                    //build .ico file from header & saved icon data
+                    createIconResources(idata, iconbytes);                      //extract images from .ico file & add to icon list
+                }
+            }
+            icons.Sort();
+        }
+
+//- cursor loading ------------------------------------------------------------
+
+        //the C# Cursor class is limited for displaying as an image, so we use an Icon obj instead
+        //we create an .ico file in memory for cursor resources
+        private byte[] buildCursorFile(ResImageGroupData idata, int entrynum)
+        {
+            //build .ico file header
+            byte[] hdrbytes = { 0, 0, 1, 0, 1, 0 };
+
+            //build .ico data directory for a single cursor resource
+            int datapos = 0x16;
+            byte[] dirbytes = new byte[0x10];
+            int dirpos = 0;
+            ResImageGroupDataEntry ientry = idata.entries[entrynum];
+            dirbytes[dirpos++] = (byte)ientry.bWidth;
+            dirbytes[dirpos++] = (byte)ientry.bWidth;           //square icon
+            dirbytes[dirpos++] = 2;                             //monochrome
+            dirbytes[dirpos++] = 0;
+            dirbytes[dirpos++] = 1;
+            dirbytes[dirpos++] = 0;
+            dirbytes[dirpos++] = 1;
+            dirbytes[dirpos++] = 0;
+            uint bsize = ientry.dwBytesInRes - 4;
+            byte[] sizebytes = BitConverter.GetBytes(bsize);
+            Array.Copy(sizebytes, 0, dirbytes, dirpos, 4);
+            byte[] posbytes = BitConverter.GetBytes(datapos);
+            Array.Copy(posbytes, 0, dirbytes, dirpos + 4, 4);
+            dirpos += 8;
+            datapos += (int)ientry.dwBytesInRes;            
+
+            byte[] cursorbytes = new byte[datapos];                       //total .cur data buf
+            Array.Copy(hdrbytes, 0, cursorbytes, 0, 6);
+            Array.Copy(dirbytes, 0, cursorbytes, 6, 0x10);                //copy the .cur header to it
+
+            //append cursor data for each icon in directory
+            ResData image = null;
+            foreach (ResData imagedata in cursorItems)                 //find the matching cursor data
+            {
+                if (imagedata.id == ientry.nID)
+                {
+                    image = imagedata;
+                    break;
+                }
+            }
+            if (image != null)
+            {
+                Array.Copy(image.data, 4, cursorbytes, 0x16, image.data.Length - 4);     //and add it to the data buf, skip the hotspot bytes
+            }
+            return cursorbytes;
+        }
+
+        private void createCursorResources(ResImageGroupData idata, byte[] cursorbytes, int entrynum)
+        {
+            //get the cursor image from the .ico file we've created in memory
+            MemoryStream ms = new MemoryStream(cursorbytes);
+            ms.Position = 0;
+            Icon curRes = new Icon(ms);                                     //get the cursor
+            ResImageGroupDataEntry ientry = idata.entries[entrynum];
+            ientry.image = curRes;                                          //link it to this res obj
+            ResData image = null;
+            foreach (ResData curdata in cursorItems)
+            {
+                if (curdata.id == ientry.nID)
+                {
+                    image = curdata;
+                    break;
+                }
+            }
+            //and add it to the CUSROR resource list as well
+            if (image != null)
+            {
+                addCursor(image.id, image.name, image.lang, curRes);
+                getDataItem(cursors, image.id, image.name).getItem(image.lang).dataBuf = image.data;
+            }
+        }
+
+        private void parseCursorGroups()
+        {
+            foreach (ResCursorGroup cg in cursorGroups)
+            {
+                foreach (ResourceItem item in cg.items)
+                {
+                    ResImageGroupData idata = (ResImageGroupData)item.item;     //this contains the .cur file header data
+                    for (int i = 0; i < idata.entries.Count; i++)
+                    {
+                        byte[] cursorbytes = buildCursorFile(idata, i);         //build .ico file from header & saved cursor data
+                        createCursorResources(idata, cursorbytes, i);           //extract images from .ico file & add to icon list
+                    }
+                }
+            }
+            cursors.Sort();
         }
 
 //- storing out ---------------------------------------------------------------
@@ -263,45 +497,67 @@ namespace Origami.Win32
                 }
             }
             return result;
-        }
-
-        public void addResourceItem(ResourceData resData, uint language, byte[] data) 
-        {
-            ResourceItem item = resData.getLanguageItem(language);      //get the specific resource for this language
-            if (item == null)                                           //don't have a resource for this lang yet
-            {
-                item = new ResourceItem(resData, language);             //so make a new one
-                resData.items.Add(item);                                //and add it to the resource data obj's list
-            }
-            item.parseData(data);            
-        }
+        }        
 
 //- resource CRUD -------------------------------------------------------------
 
-        public void addAccelerator(uint id, String name, uint language, byte[] data)
+        public void addCursor(uint id, String name, uint language, Icon cursor)
         {
-            ResAccelerator acc = (ResAccelerator)getDataItem(accelerators, id, name);
-            if (acc == null)
+            ResCursor cur = (ResCursor)getDataItem(cursors, id, name);
+            if (cur == null)
             {
-                acc = new ResAccelerator(id, name);
-                accelerators.Add(acc);
+                cur = new ResCursor(id, name);
+                cursors.Add(cur);
             }
-            addResourceItem(acc, language, data);
+            cur.addItem(language, cursor);
         }
 
-        public void deleteAccelerator(String name)
+        public void deleteCursor(uint id, String name, uint language)
         {
+            ResCursor cur = (ResCursor)getDataItem(cursors, id, name);
+            if (cur != null)
+            {
+                cur.deleteItem(language);
+            }
         }
 
-        public byte[] getAccelerator(String name)
+        public Icon getCursor(uint id, String name, uint language)
         {
-            byte[] result = null;
+            Icon result = null;
             return result;
         }
 
 //-----------------------------------------------------------------------------
 
-        public void addBitmap(uint id, String name, uint language, byte[] data)
+        public void addCursorGroup(uint id, String name, uint language, ResImageGroupData item)
+        {
+            ResCursorGroup cg = (ResCursorGroup)getDataItem(cursorGroups, id, name);
+            if (cg == null)
+            {
+                cg = new ResCursorGroup(id, name);
+                cursorGroups.Add(cg);
+            }
+            cg.addItem(language, item);
+        }
+
+        public void deleteCursorGroup(uint id, String name, uint language)
+        {
+            ResCursorGroup cg = (ResCursorGroup)getDataItem(cursorGroups, id, name);
+            if (cg != null)
+            {
+                cg.deleteItem(language);
+            }
+        }
+
+        public ResCursorGroup getCursorGroup(uint id, String name, uint language)
+        {
+            ResCursorGroup result = null;
+            return result;
+        }
+
+//-----------------------------------------------------------------------------
+
+        public void addBitmap(uint id, String name, uint language, Bitmap bitmap)
         {
             ResBitmap bmp = (ResBitmap)getDataItem(bitmaps, id, name);
             if (bmp == null)
@@ -309,19 +565,19 @@ namespace Origami.Win32
                 bmp = new ResBitmap(id, name);
                 bitmaps.Add(bmp);
             }
-            addResourceItem(bmp, language, data);
-
+            bmp.addItem(language, bitmap);
         }
 
-        public void addBitmap(String name, Bitmap bmp)
+        public void deleteBitmap(uint id, String name, uint language)
         {
+            ResBitmap bmp = (ResBitmap)getDataItem(bitmaps, id, name);
+            if (bmp != null)
+            {
+                bmp.deleteItem(language);
+            }            
         }
 
-        public void deleteBitmap(String name)
-        {
-        }
-
-        public Bitmap getBitmap(String name)
+        public Bitmap getBitmap(uint id, String name, uint language)
         {
             Bitmap result = null;
             return result;
@@ -329,24 +585,85 @@ namespace Origami.Win32
 
 //-----------------------------------------------------------------------------
 
-        public void addCursor(uint id, String name, uint language, byte[] data)
+        public void addIcon(uint id, String name, uint language, Icon icon)
         {
-            ResCursor cur = (ResCursor)getDataItem(cursors, id, name);
-            if (cur == null)
+            ResIcon resicon = (ResIcon)getDataItem(icons, id, name);
+            if (resicon == null)
             {
-                cur = new ResCursor(id, name);
-                cursors.Add(cur);            
+                resicon = new ResIcon(id, name);
+                icons.Add(resicon);
             }
-            addResourceItem(cur, language, data);
+            resicon.addItem(language, icon);
         }
 
-        public void deleteCursor(String name)
+        public void deleteIcon(uint id, String name, uint language)
         {
+            ResIcon resicon = (ResIcon)getDataItem(icons, id, name);
+            if (resicon != null)
+            {
+                resicon.deleteItem(language);
+            }
         }
 
-        public byte[] getCursor(String name)
+        public Icon getIcon(uint id, String name, uint language)
         {
-            byte[] result = null;
+            Icon result = null;
+            return result;
+        }
+
+//-----------------------------------------------------------------------------
+
+        public void addIconGroup(uint id, String name, uint language, ResImageGroupData item)
+        {
+            ResIconGroup ig = (ResIconGroup)getDataItem(iconGroups, id, name);
+            if (ig == null)
+            {
+                ig = new ResIconGroup(id, name);
+                iconGroups.Add(ig);
+            }
+            ig.addItem(language, item);
+        }
+
+        public void deleteIconGroup(uint id, String name, uint language)
+        {
+            ResIconGroup ig = (ResIconGroup)getDataItem(iconGroups, id, name);
+            if (ig != null)
+            {
+                ig.deleteItem(language);
+            }
+        }
+
+        public ResIconGroup getIconGroup(uint id, String name, uint language)
+        {
+            ResIconGroup result = null;
+            return result;
+        }
+
+//-----------------------------------------------------------------------------
+
+        public void addMenu(uint id, String name, uint language, byte[] data)
+        {
+            ResMenu resmenu = (ResMenu)getDataItem(menus, id, name);
+            if (resmenu == null)
+            {
+                resmenu = new ResMenu(id, name);
+                menus.Add(resmenu);
+            }
+            resmenu.addItem(language, data);            
+        }
+
+        public void deleteMenu(uint id, String name, uint language)
+        {
+            ResMenu resmenu = (ResMenu)getDataItem(menus, id, name);
+            if (resmenu != null)
+            {
+                resmenu.deleteItem(language);
+            }
+        }
+
+        public List<String> getMenu(uint id, String name, uint language)
+        {
+            List<String> result = null;
             return result;
         }
 
@@ -360,15 +677,75 @@ namespace Origami.Win32
                 dlg = new ResDialog(id, name);
                 dialogs.Add(dlg);
             }
-            addResourceItem(dlg, language, data);
-
+            dlg.addItem(language, data);            
         }
 
-        public void deleteDialog(String name)
+        public void deleteDialog(uint id, String name, uint language)
         {
+            ResDialog dlg = (ResDialog)getDataItem(dialogs, id, name);
+            if (dlg != null)
+            {
+                dlg.deleteItem(language);
+            }
         }
 
-        public byte[] getDialog(String name)
+        public List<String> getDialog(uint id, String name, uint language)
+        {
+            List<String> result = null;
+            return result;
+        }
+
+//-----------------------------------------------------------------------------
+
+        public void addStringTable(uint id, String name, uint language, List<String> str)
+        {
+            ResStringTable resStr = (ResStringTable)getDataItem(stringtable, id, name);
+            if (resStr == null)
+            {
+                resStr = new ResStringTable(id, name);
+                stringtable.Add(resStr);
+            }
+            resStr.addItem(language, str);
+        }
+
+        public void deleteStringResource(uint id, String name, uint language)
+        {
+            ResStringTable resStr = (ResStringTable)getDataItem(stringtable, id, name);
+            if (resStr != null)
+            {
+                resStr.deleteItem(language);
+            }
+        }
+
+        public List<String> getStringResource(uint id, String name, uint language)
+        {
+            List<String> result = null;
+            return result;
+        }
+
+//-----------------------------------------------------------------------------
+
+        public void addFontDirectory(uint id, String name, uint language, byte[] data)
+        {
+            ResFontDir fontd = (ResFontDir)getDataItem(fontDirectories, id, name);
+            if (fontd == null)
+            {
+                fontd = new ResFontDir(id, name);
+                fontDirectories.Add(fontd);
+            }
+            fontd.addItem(language, data);
+        }
+
+        public void deleteFontDirectory(uint id, String name, uint language)
+        {
+            ResFontDir fontd = (ResFontDir)getDataItem(fontDirectories, id, name);
+            if (fontd != null)
+            {
+                fontd.deleteItem(language);
+            }
+        }
+
+        public byte[] getFontDirectory(uint id, String name, uint language)
         {
             byte[] result = null;
             return result;
@@ -384,14 +761,19 @@ namespace Origami.Win32
                 font = new ResFont(id, name);
                 fonts.Add(font);
             }
-            addResourceItem(font, language, data);
+            font.addItem(language, data);
         }
 
-        public void deleteFont(String name)
+        public void deleteFont(uint id, String name, uint language)
         {
+            ResFont font = (ResFont)getDataItem(fonts, id, name);
+            if (font != null)
+            {
+                font.deleteItem(language);
+            }
         }
 
-        public byte[] getFont(String name)
+        public byte[] getFont(uint id, String name, uint language)
         {
             byte[] result = null;
             return result;
@@ -399,147 +781,29 @@ namespace Origami.Win32
 
 //-----------------------------------------------------------------------------
 
-        public void addFontDirectory(uint id, String name, uint language, byte[] data)
+        public void addAccelerator(uint id, String name, uint language, List<String> accel)
         {
-            ResFontDir fontd = (ResFontDir)getDataItem(fontDirectories, id, name);
-            if (fontd == null)
+            ResAccelerator resAccel = (ResAccelerator)getDataItem(accelerators, id, name);
+            if (resAccel == null)
             {
-                fontd = new ResFontDir(id, name);
-                fontDirectories.Add(fontd);
+                resAccel = new ResAccelerator(id, name);
+                accelerators.Add(resAccel);
             }
-            addResourceItem(fontd, language, data);
+            resAccel.addItem(language, accel);            
         }
 
-        public void deleteFontDirectory(String name)
+        public void deleteAccelerator(uint id, String name, uint language)
         {
-        }
-
-        public byte[] getFontDirectory(String name)
-        {
-            byte[] result = null;
-            return result;
-        }
-
-//-----------------------------------------------------------------------------
-
-        public void addCursorGroup(uint id, String name, uint language, byte[] data)
-        {
-            ResCursorGroup rcg = (ResCursorGroup)getDataItem(cursorGroups, id, name);
-            if (rcg == null)
+            ResAccelerator resAccel = (ResAccelerator)getDataItem(accelerators, id, name);
+            if (resAccel != null)
             {
-                rcg = new ResCursorGroup(id, name);
-                cursorGroups.Add(rcg);
+                resAccel.deleteItem(language);
             }
-            addResourceItem(rcg, language, data);
         }
 
-        public void deleteCursorGroup(String name)
+        public List<String> getAccelerator(uint id, String name, uint language)
         {
-        }
-
-        public byte[] getCursorGroup(String name)
-        {
-            byte[] result = null;
-            return result;
-        }
-
-//-----------------------------------------------------------------------------
-
-        public void addIconGroup(uint id, String name, uint language, byte[] data)
-        {
-            ResIconGroup rig = (ResIconGroup)getDataItem(iconGroups, id, name);
-            if (rig == null)
-            {
-                rig = new ResIconGroup(id, name);
-                iconGroups.Add(rig);
-            }
-            addResourceItem(rig, language, data);
-        }
-
-        public void deleteIconGroup(String name)
-        {
-        }
-
-        public byte[] getIconGroup(String name)
-        {
-            byte[] result = null;
-            return result;
-        }
-
-//-----------------------------------------------------------------------------
-
-        public void addIcon(uint id, String name, uint language, byte[] data)
-        {
-            ResIcon ricon = (ResIcon)getDataItem(icons, id, name);
-            if (ricon == null)
-            {
-                ricon = new ResIcon(id, name);
-                icons.Add(ricon);
-            }
-            addResourceItem(ricon, language, data);
-        }
-
-        public void addIcon(String name, Icon icon)
-        {
-        }
-
-        public void deleteIcon(String name)
-        {
-        }
-
-        public Icon getIcon(String name)
-        {
-            Icon result = null;
-            return result;
-        }
-
-//-----------------------------------------------------------------------------
-
-        public void addMenu(uint id, String name, uint language, byte[] data)
-        {
-            ResMenu rmenu = (ResMenu)getDataItem(menus, id, name);
-            if (rmenu == null)
-            {
-                rmenu = new ResMenu(id, name);
-                menus.Add(rmenu);
-            }
-            addResourceItem(rmenu, language, data);
-        }
-
-        public void deleteMenu(String name)
-        {
-        }
-
-        public byte[] getMenu(String name)
-        {
-            byte[] result = null;
-            return result;
-        }
-
-//-----------------------------------------------------------------------------
-
-        public void addStringTable(uint id, String name, uint language, byte[] data)
-        {
-            ResStringTable st = (ResStringTable)getDataItem(stringtable, id, name);
-            if (st == null)
-            {
-                st = new ResStringTable(id, name);
-                stringtable.Add(st);
-            }
-            addResourceItem(st, language, data);
-        }
-
-        public void addStringResource(String name, String str)
-        {
-        }
-
-        public void deleteStringResource(String name)
-        {
-        }
-
-        public String getStringResource(String name)
-        {
-            String result = null;
+            List<String> result = null;
             return result;
         }
 
@@ -553,14 +817,19 @@ namespace Origami.Win32
                 udata = new ResUserData(id, name);
                 userData.Add(udata);
             }
-            addResourceItem(udata, language, data);
+            udata.addItem(language, data);
         }
 
-        public void deleteUserData(String name)
+        public void deleteUserData(uint id, String name, uint language)
         {
+            ResUserData udata = (ResUserData)getDataItem(userData, id, name);
+            if (udata != null)
+            {
+                udata.deleteItem(language);
+            }
         }
 
-        public byte[] getUserData(String name)
+        public byte[] getUserData(uint id, String name, uint language)
         {
             byte[] result = null;
             return result;
@@ -570,22 +839,27 @@ namespace Origami.Win32
 
         public void addVersion(uint id, String name, uint language, byte[] data)
         {
-            ResVersion ver = (ResVersion)getDataItem(versions, id, name);
-            if (ver == null)
+            ResVersion resVer = (ResVersion)getDataItem(versions, id, name);
+            if (resVer == null)
             {
-                ver = new ResVersion(id, name);
-                versions.Add(ver);
+                resVer = new ResVersion(id, name);
+                versions.Add(resVer);
             }
-            addResourceItem(ver, language, data);
+            resVer.addItem(language, data);
         }
 
-        public void deleteVersion(String name)
+        public void deleteVersion(uint id, String name, uint language)
         {
+            ResVersion resVer = (ResVersion)getDataItem(versions, id, name);
+            if (resVer != null)
+            {
+                resVer.deleteItem(language);
+            }
         }
 
-        public byte[] getVersion(String name)
+        public List<String> getVersion(uint id, String name, uint language)
         {
-            byte[] result = null;
+            List<String> result = null;
             return result;
         }
     }
@@ -594,8 +868,8 @@ namespace Origami.Win32
 //   RESOURCE DATA CLASSES
 //-----------------------------------------------------------------------------
 
-    //base class 
-    public class ResourceData 
+    //base class - this is at the name/id level of the res table tree & has a list of resource items
+    public class ResourceData : IComparable<ResourceData>
     {
         public uint id;
         public String name;
@@ -608,18 +882,26 @@ namespace Origami.Win32
             items = new List<ResourceItem>();
         }
 
-        //gets a list of lang ids that this resource suports
-        public List<uint> getLanguageList()
+        public void addItem(uint lang, Object obj)
         {
-            List<uint> langs = new List<uint>();
-            foreach (ResourceItem item in items)
-            {
-                langs.Add(item.lang);
-            }
-            return langs;
+            deleteItem(lang);
+            ResourceItem item = new ResourceItem(this, lang, obj);
+            items.Add(item);
         }
 
-        public ResourceItem getLanguageItem(uint lang)
+        public void deleteItem(uint lang)
+        {
+            foreach (ResourceItem item in items)
+            {
+                if (item.lang == lang)
+                {
+                    items.Remove(item);
+                    break;
+                }
+            }
+        }
+
+        public ResourceItem getItem(uint lang)
         {
             ResourceItem result = null;
             foreach (ResourceItem item in items)
@@ -633,31 +915,37 @@ namespace Origami.Win32
             return result;
         }
 
-        public virtual object parseRawData(byte[] dataBuf)
+        //gets a list of lang ids that this resource suports
+        public List<uint> getLanguageList()
         {
-            return null;
+            List<uint> langs = new List<uint>();
+            foreach (ResourceItem item in items)
+            {
+                langs.Add(item.lang);
+            }
+            return langs;
+        }
+
+        public int CompareTo(ResourceData that)
+        {
+            return this.id.CompareTo(that.id);
         }
     }
 
+    //this is at the lang level of the res table tree - each resource data has a list of these
     public class ResourceItem
     {
         public ResourceData parent; 
         public uint lang;
-        public byte[] dataBuf;
-        public Object item;
+        public byte[] dataBuf;      //the raw data - either loaded from exe file, or generated from resource obj
+        public Object item;         //the resource obj
 
-        public ResourceItem(ResourceData _parent, uint _lang)
+        public ResourceItem(ResourceData _parent, uint _lang, Object _item)
         {
             parent = _parent;
             lang = _lang;
             dataBuf = null;
-            item = null;
-        }
-
-        public void parseData(byte[] data)
-        {
-            dataBuf = data;
-            item = parent.parseRawData(data);
+            item = _item;
         }
     }
 
@@ -669,6 +957,22 @@ namespace Origami.Win32
             : base(id, name)
         {
         }
+
+        public static List<string> parseData(byte[] dataBuf)
+        {
+            List<string> acceltbl = new List<string>();
+            int pos = 0;
+            while (pos < dataBuf.Length)
+            {
+                uint flags = ((uint)dataBuf[pos + 1] * 256) + dataBuf[pos];
+                uint ansi = ((uint)dataBuf[pos + 3] * 256) + dataBuf[pos + 2];
+                uint id = ((uint)dataBuf[pos + 5] * 256) + dataBuf[pos + 4];
+                String accstr = "flags = " + flags.ToString("X4") + " ansi = " + ansi.ToString("X4") + " id = " + id.ToString("X4");
+                acceltbl.Add(accstr);
+                pos += 8;
+            }
+            return acceltbl;
+        }
     }
 
 //- bitmap --------------------------------------------------------------
@@ -676,19 +980,20 @@ namespace Origami.Win32
     //https://en.wikipedia.org/wiki/BMP_file_format
 
     public class ResBitmap : ResourceData
-    {
-        public Bitmap bitmap;
+    {        
 
         public ResBitmap(uint id, String name)
             : base(id, name)
-        {
+        {            
         }
 
-        public override object parseRawData(byte[] dataBuf)
+        public static Bitmap parseData(byte[] dataBuf)
         {
             //the bitmap resource data is the same as in a bitmap file, except the header has been removed
             //so we build a header, prepend it to the front of our resource data
             //and create a bitmap from the total data, as if we read it from a file
+
+            Bitmap bitmap;
 
             //BITMAPFILEHEADER struct
             byte[] hdr = { 0x42, 0x4D,                  //sig = BM
@@ -728,38 +1033,6 @@ namespace Origami.Win32
         {
         }
     }
-    
-//-----------------------------------------------------------------------------
-
-    public class ResDialog : ResourceData
-    {
-        public ResDialog(uint id, String name)
-            : base(id, name)
-        {
-        }
-    }
-    
-//-----------------------------------------------------------------------------
-
-    public class ResFont : ResourceData
-    {
-                public ResFont(uint id, String name)
-            : base(id, name)
-        {
-        }
-
-    }
-
-//-----------------------------------------------------------------------------
-
-    public class ResFontDir : ResourceData
-    {
-                public ResFontDir(uint id, String name)
-            : base(id, name)
-        {
-        }
-
-    }
 
 //-----------------------------------------------------------------------------
 
@@ -770,6 +1043,70 @@ namespace Origami.Win32
         {
         }
 
+        public static ResCursorGroup parseData(byte[] resdata)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ResCursorGroupData
+    {
+        public static ResCursorGroupData parseData(byte[] resdata)
+        {
+            ResCursorGroupData cgdata = new ResCursorGroupData();
+            SourceFile src = new SourceFile(resdata);
+            return cgdata;
+        }
+    }
+
+//-----------------------------------------------------------------------------
+
+    public class ResDialog : ResourceData
+    {
+        public ResDialog(uint id, String name)
+            : base(id, name)
+        {
+        }
+
+        public static List<string> parseData(byte[] resdata)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
+//-----------------------------------------------------------------------------
+
+    public class ResFont : ResourceData
+    {
+        public ResFont(uint id, String name)
+            : base(id, name)
+        {
+        }
+    }
+
+//-----------------------------------------------------------------------------
+
+    public class ResFontDir : ResourceData
+    {
+        public ResFontDir(uint id, String name)
+            : base(id, name)
+        {
+        }
+    }
+
+//-----------------------------------------------------------------------------
+
+    //https://msdn.microsoft.com/en-us/library/ms997538.aspx
+
+    public class ResIcon : ResourceData
+    {
+        public Icon icon;
+
+        public ResIcon(uint id, String name)
+            : base(id, name)
+        {
+            icon = null;
+        }
     }
 
 //-----------------------------------------------------------------------------
@@ -780,40 +1117,79 @@ namespace Origami.Win32
             : base(id, name)
         {
         }
-
     }
 
-//-----------------------------------------------------------------------------
-
-    public class ResIcon : ResourceData
+    public class ResImageGroupData
     {
-                public ResIcon(uint id, String name)
-            : base(id, name)
-        {
-        }
+        public List<ResImageGroupDataEntry> entries;
 
+        public static ResImageGroupData parseData(byte[] resdata)
+        {
+            ResImageGroupData igdata = new ResImageGroupData();
+            SourceFile src = new SourceFile(resdata);
+            uint res = src.getTwo();                
+            uint type = src.getTwo();
+            int count = (int)src.getTwo();
+            igdata.entries = new List<ResImageGroupDataEntry>(count);
+            for (int i = 0; i < count; i++)
+            {
+                ResImageGroupDataEntry igentry = ResImageGroupDataEntry.parseData(src);
+                igdata.entries.Add(igentry);
+            }
+            return igdata;
+        }
     }
 
+    public class ResImageGroupDataEntry
+    {
+        public uint bWidth;               // Width, in pixels, of the image
+        public uint bHeight;              // Height, in pixels, of the image
+        public uint bColorCount;          // Number of colors in image (0 if >=8bpp)
+        public uint wPlanes;              // Color Planes
+        public uint wBitCount;            // Bits per pixel
+        public uint dwBytesInRes;         // how many bytes in this resource?
+        public uint nID;                  // the ID
+        public Icon image;
+
+        public static ResImageGroupDataEntry parseData(SourceFile src)
+        {
+            ResImageGroupDataEntry cgdata = new ResImageGroupDataEntry();
+            cgdata.bWidth = src.getOne();
+            cgdata.bHeight = src.getOne();
+            cgdata.bColorCount = src.getOne();
+            uint res = src.getOne();
+            cgdata.wPlanes = src.getTwo();
+            cgdata.wBitCount = src.getTwo();
+            cgdata.dwBytesInRes = src.getFour();
+            cgdata.nID = src.getTwo();
+            cgdata.image = null;
+            return cgdata;
+        }
+    }
+    
 //-----------------------------------------------------------------------------
 
     public class ResMenu : ResourceData
     {
-                public ResMenu(uint id, String name)
+        public ResMenu(uint id, String name)
             : base(id, name)
         {
         }
 
+        public static List<string> parseData(byte[] resdata)
+        {
+            throw new NotImplementedException();
+        }
     }
     
 //-----------------------------------------------------------------------------
 
     public class ResUserData : ResourceData
     {
-                public ResUserData(uint id, String name)
+        public ResUserData(uint id, String name)
             : base(id, name)
         {
         }
-
     }
 
 //- string table --------------------------------------------------------------
@@ -828,28 +1204,26 @@ namespace Origami.Win32
             bundleNum = (int)(id - 1) * 16;
         }
 
-        public int getString(int strpos, byte[] dataBuf, List<string> strings)
+        public static void getString(ref int strpos, byte[] dataBuf, List<string> strings)
         {
-            int strLen = (int)((dataBuf[strpos + 1] * 256) + dataBuf[strpos]);
+            int strLen = (int)((dataBuf[strpos + 1] * 256) + dataBuf[strpos]) * 2;
             strpos += 2;
-            StringBuilder str = new StringBuilder(strLen);
-            for (int i = 0; i < strLen; i++)
+            String str = "";
+            if (strLen > 0)
             {
-                int ch = (int)((dataBuf[strpos + 1] * 256) + dataBuf[strpos]);
-                str.Append(Convert.ToChar(ch));
-                strpos += 2;
+                str = System.Text.Encoding.Unicode.GetString(dataBuf, strpos, strLen);
+                strpos += strLen;
             }
-            strings.Add(str.ToString());
-            return strpos;
+            strings.Add(str);            
         }
 
-        public override object parseRawData(byte[] dataBuf)
+        public static List<string> parseData(byte[] dataBuf)
         {
             List<string> strings = new List<string>(16);
             int strpos = 0;
             while (strpos < dataBuf.Length)
             {
-                strpos = getString(strpos, dataBuf, strings);
+                getString(ref strpos, dataBuf, strings);
             }
             return strings;
         }
@@ -862,6 +1236,29 @@ namespace Origami.Win32
         public ResVersion(uint id, String name)
             : base(id, name)
         {
+        }
+
+        public static List<string> parseData(byte[] resdata)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+//- helper class for loading/saving cursor / icon data ------------------------
+
+    public class ResData
+    {
+        public uint id;
+        public String name;
+        public uint lang;
+        public byte[] data;
+
+        public ResData(uint _id, String _name, uint _lang, byte[] _data)
+        {
+            id = _id;
+            name = _name;
+            lang = _lang;
+            data = _data;
         }
     }
 }

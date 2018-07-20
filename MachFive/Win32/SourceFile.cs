@@ -32,9 +32,9 @@ namespace Origami.Win32
         uint srcpos;
 
         //for reading fields from a disk file
-        public SourceFile(String se1name)
+        public SourceFile(String filename)
         {
-            srcbuf = File.ReadAllBytes(se1name);
+            srcbuf = File.ReadAllBytes(filename);
             srclen = (uint)srcbuf.Length;
             srcpos = 0;
         }
@@ -50,6 +50,14 @@ namespace Origami.Win32
         public uint getPos()
         {
             return srcpos;
+        }
+
+        public byte[] getRange(uint len)
+        {
+            byte[] result = new byte[len];
+            Array.Copy(srcbuf, srcpos, result, 0, len);
+            srcpos += len;
+            return result;
         }
 
         public byte[] getRange(uint ofs, uint len)

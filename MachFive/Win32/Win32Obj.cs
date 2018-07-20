@@ -28,14 +28,12 @@ using System.Text;
 
 namespace Origami.Win32
 {
-    class Win32Obj
+    class Win32Obj : Win32Coff
     {
         public String filename;
-        public PEHeader peHeader;
-        public List<Section> sections;
         public List<ObjSymbolRecord> symbolTable;
 
-        public Win32Obj()
+        public Win32Obj() : base()
         {
             filename = null;
             symbolTable = new List<ObjSymbolRecord>();
@@ -49,58 +47,23 @@ namespace Origami.Win32
 
             SourceFile source = new SourceFile(filename);
 
-            readWinHeader(source);
+            readCoffHeader(source);
             loadSections(source);
-        }
-
-        private void readWinHeader(SourceFile source)
-        {
-            peHeader = new PEHeader();
-
-            peHeader.machine = source.getTwo();
-            peHeader.sectionCount = (int)source.getTwo();
-            peHeader.timeStamp = source.getFour();
-            peHeader.pSymbolTable = source.getFour();
-            peHeader.symbolcount = source.getFour();
-            peHeader.optionalHeaderSize = source.getTwo();
-            peHeader.characteristics = source.getTwo();
 
         }
-
-        private void loadSections(SourceFile source)
-        {
-            int sectionCount = peHeader.sectionCount;
-
-            sections = new List<Section>(sectionCount);
-            for (int i = 0; i < sectionCount; i++)
-            {
-                Section section = loadSection(source, i + 1);
-                sections.Add(section);
-            }
-        }
-
-        private Section loadSection(SourceFile source, int num)
-        {
-
-            Section section = new Section();
-            section.secName = source.getAsciiString(8);
-
-            section.memsize = source.getFour();
-            section.memloc = source.getFour();
-            section.filesize = source.getFour();
-            section.fileloc = source.getFour();
-
-            section.pRelocations = source.getFour();
-            section.pLinenums = source.getFour();
-            section.relocCount = (int)source.getTwo();
-            section.linenumCount = (int)source.getTwo();
-            section.flags = source.getFour();
-            //section.imageBase = optHeader.imageBase;
-            section.data = source.getRange(section.fileloc, section.filesize);          //load section data
-
-            return section;
-        }
-
-
     }
+
+    //- obj sym table ------------------------------------------------------------
+
+    public class ObjSymbolRecord
+    {
+        String name;
+        uint value;
+        uint sectionNum;
+        uint type;
+        uint storageClass;
+        uint auxSymbolCount;
+    }
+
+
 }

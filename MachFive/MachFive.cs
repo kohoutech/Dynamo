@@ -22,32 +22,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using MachFive.AST;
+
 namespace MachFive
 {
     class MachFive
     {
         static MachFive machFive;
 
-        Node ASTTree;
-        Module mainModule;
         Linker linker;
 
         static void Main(string[] args)
         {
             machFive = new MachFive();
             machFive.generate();
+            
         }
+
+        public MachFive()
+        {
+            linker = new Linker();
+        }
+
 
         public void generate()
         {
-            GenerateCode(ASTTree);
-            linker = new Linker();
-            linker.BuildImage("test.exe");
-        }
-
-        public void GenerateCode(Node astTree)
-        {
-            astTree.GenerateCode();
+            linker.BuildExecutable();
+            Console.WriteLine("done!");
         }
     }
 }

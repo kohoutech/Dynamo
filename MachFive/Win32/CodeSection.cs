@@ -54,7 +54,7 @@ namespace Origami.Win32
         //code format based on MS dumpbin utility
         public List<String> disasmCode()
         {
-            uint srcpos = 0;
+            //uint srcpos = 0;
             codeList = new List<String>();
             //StringBuilder asmLine = new StringBuilder();
             //i32Disasm disasm = new i32Disasm(data, srcpos);

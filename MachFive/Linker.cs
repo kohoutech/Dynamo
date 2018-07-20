@@ -21,17 +21,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 using Origami.Win32;
 
 namespace MachFive
 {
+
+
     public class Linker
     {
-        public Win32Exe exeImage;
-
-        public void BuildImage(String filename) 
+        public Linker()
         {
+
+        }
+
+        internal void BuildExecutable()
+        {
+            Win32Exe exeImage = new Win32Exe();
+            exeImage.layoutImage();
+            exeImage.writeFile("test.exe");
         }
     }
 }
+
+//Console.WriteLine("done!");

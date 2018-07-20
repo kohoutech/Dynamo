@@ -132,6 +132,29 @@ namespace Origami.Win32
             this.data = null;
         }
 
+        public static Section loadSection(SourceFile source)
+        {
+
+            Section section = new Section();
+            section.secName = source.getAsciiString(8);
+
+            section.memsize = source.getFour();
+            section.memloc = source.getFour();
+            section.filesize = source.getFour();
+            section.fileloc = source.getFour();
+
+            section.pRelocations = source.getFour();
+            section.pLinenums = source.getFour();
+            section.relocCount = (int)source.getTwo();
+            section.linenumCount = (int)source.getTwo();
+            section.flags = source.getFour();
+            section.data = source.getRange(section.fileloc, section.filesize);          //load section data
+
+            return section;
+        }
+
+
+
 //- flag methods --------------------------------------------------------------
 
         public bool isCode()
@@ -211,4 +234,18 @@ namespace Origami.Win32
             return dataStr.ToString();
         }
     }
+
+    //-----------------------------------------------------------------------------
+
+    public class ExportSection : Section
+    {
+    }
+
+    //-----------------------------------------------------------------------------
+
+    public class ImportSection : Section
+    {
+    }
+    
+
 }
