@@ -66,9 +66,9 @@ namespace Origami.Win32
         public uint numberOfRvaAndSizes;
 
         //dataDirectory entries
-        public DataDirectory exportTable;
-        public DataDirectory importTable;
-        public DataDirectory resourceTable;
+        public DataDirectory dExportTable;
+        public DataDirectory dImportTable;
+        public DataDirectory dResourceTable;
         public DataDirectory exceptionTable;
         public DataDirectory certificatesTable;
         public DataDirectory baseRelocationTable;
@@ -84,9 +84,9 @@ namespace Origami.Win32
         public DataDirectory reserved;
 
         //standard sections
-        public ExportSection exportSection;
-        public ImportSection importSection;
-        public ResourceTable resourceSection;
+        public ExportTable exportTable;
+        public ImportTable importTable;
+        public ResourceTable resourceTable;
 
         public Win32Exe() : base()
         {
@@ -126,9 +126,9 @@ namespace Origami.Win32
             numberOfRvaAndSizes = 0;
 
             //data directory
-            exportTable = null;
-            importTable = null;
-            resourceTable = null;
+            dExportTable = null;
+            dImportTable = null;
+            dResourceTable = null;
             exceptionTable = null;
             certificatesTable = null;
             baseRelocationTable = null;
@@ -144,9 +144,9 @@ namespace Origami.Win32
             reserved = null;
 
             //standard sections
-            exportSection = null;
-            importSection = null;
-            resourceSection = null;
+            exportTable = null;
+            importTable = null;
+            resourceTable = null;
         }
 
 //- reading in ----------------------------------------------------------------
@@ -205,9 +205,9 @@ namespace Origami.Win32
             loaderFlags = source.getFour();
             numberOfRvaAndSizes = source.getFour();
 
-            exportTable = DataDirectory.readDataDirectory(source);
-            importTable = DataDirectory.readDataDirectory(source);
-            resourceTable = DataDirectory.readDataDirectory(source);
+            dExportTable = DataDirectory.readDataDirectory(source);
+            dImportTable = DataDirectory.readDataDirectory(source);
+            dResourceTable = DataDirectory.readDataDirectory(source);
             exceptionTable = DataDirectory.readDataDirectory(source);
             certificatesTable = DataDirectory.readDataDirectory(source);
             baseRelocationTable = DataDirectory.readDataDirectory(source);

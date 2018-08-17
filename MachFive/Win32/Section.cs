@@ -234,18 +234,4 @@ namespace Origami.Win32
             return dataStr.ToString();
         }
     }
-
-    //-----------------------------------------------------------------------------
-
-    public class ExportSection : Section
-    {
-    }
-
-    //-----------------------------------------------------------------------------
-
-    public class ImportSection : Section
-    {
-    }
-    
-
 }
