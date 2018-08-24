@@ -22,128 +22,113 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MachFive
+namespace MachFive.AST
 {
+    //base class
     class Node
     {
-        public virtual void GenerateCode () {
-        }
     }
 
 //- operation nodes -----------------------------------------------------------
 
-    class AddIntegerNode : Node
+    class AddOpNode : Node
     {
     }
 
-    class SubtractIntegerNode : Node
+    class SubtractOpNode : Node
     {
     }
 
-    class MultiplyIntegerNode : Node
+    class MultiplyOpNode : Node
     {
     }
 
-    class DivideIntegerNode : Node
+    class DivideOpNode : Node
     {
     }
 
-    class ModIntegerNode : Node
+    class ModOpNode : Node
     {
     }
 
-    class NegateIntegerNode : Node
+    class NotOpNode : Node
     {
     }
 
-    class NotIntegerNode : Node
+    class AndOpNode : Node
     {
     }
 
-    class AndIntegerNode : Node
+    class OrOpNode : Node
     {
     }
 
-    class OrIntegerNode : Node
+    class XorOpNode : Node
     {
     }
 
-    class XorIntegerNode : Node
+    class ShiftLeftOpNode : Node
     {
     }
 
-    class ShiftLeftIntegerNode : Node
+    class ShiftRightOpNode : Node
     {
     }
 
-    class ShiftRightIntegerNode : Node
+    class IncrementOpNode : Node
     {
     }
 
-    class IncrementIntegerNode : Node
+    class DecrementOpNode : Node
     {
     }
 
-    class DecrementIntegerNode : Node
-    {
-    }
-
-    class AddFloatNode : Node
-    {
-    }
-
-    class SubtractFloatNode : Node
-    {
-    }
-
-    class MulitplyFloatNode : Node
-    {
-    }
-
-    class DivideFloatNode : Node
-    {
-    }
-
-    class NegateFloatNode : Node
-    {
-    }
 
 //- statement nodes -----------------------------------------------------------
 
-    class StatementListNode : Node
+    //base statement node
+    class StatementNode : Node
     {
-        List<Node> statementList;
-
-        public override void GenerateCode()
-        {
-            foreach (Node stmt in statementList)
-            {
-                stmt.GenerateCode();
-            }
-        }
+        StatementNode nextStmt;
     }
 
-    class IfNode : Node
+    class IfNode : StatementNode
     {
     }
 
-    class IfElseNode : Node
+    class IfElseNode : StatementNode
     {
     }
 
-    class WhileNode : Node
+    class WhileNode : StatementNode
     {
     }
 
-    class DoWhileNode : Node
+    class DoWhileNode : StatementNode
     {
     }
 
-    class SwitchNode : Node
+    class SwitchNode : StatementNode
     {
     }
 
-    class ForNode : Node
+    class CaseNode : StatementNode
+    {
+    }
+
+    class ForNode : StatementNode
+    {
+    }
+
+    class BreakNode : StatementNode
+    {
+    }
+
+    class ContinueNode : StatementNode
+    {
+    }
+
+    class ReturnNode : StatementNode
     {
     }
 }
