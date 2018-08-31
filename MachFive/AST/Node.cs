@@ -84,6 +84,33 @@ namespace MachFive.AST
     }
 
 
+//- conditional nodes -----------------------------------------------------------
+
+    class EqualConditNode : Node
+    {
+    }
+
+    class NotEqualConditNode : Node
+    {
+    }
+
+    class LessThanConditNode : Node
+    {
+    }
+
+    class LessEqualConditNode : Node
+    {
+    }
+
+    class GreaterThanConditNode : Node
+    {
+    }
+
+    class GreaterEqualConditNode : Node
+    {
+    }
+
+    
 //- statement nodes -----------------------------------------------------------
 
     //base statement node
