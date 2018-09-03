@@ -31,17 +31,15 @@ namespace Origami.Win32
     class Win32Obj : Win32Coff
     {
         public String filename;
-        public List<ObjSymbolRecord> symbolTable;
 
         public Win32Obj() : base()
         {
             filename = null;
-            symbolTable = new List<ObjSymbolRecord>();
         }
 
 //- reading in ----------------------------------------------------------------
 
-        public void readFile(String _filename)
+        public void readFromFile(String _filename)
         {
             filename = _filename;
 
@@ -49,20 +47,53 @@ namespace Origami.Win32
 
             readCoffHeader(source);
             loadSections(source);
-
+            loadReloctionTable(source);
+            loadStringTable(source);
         }
-    }
 
-    //- obj sym table ------------------------------------------------------------
+//- writing out ---------------------------------------------------------------
 
-    public class ObjSymbolRecord
-    {
-        String name;
-        uint value;
-        uint sectionNum;
-        uint type;
-        uint storageClass;
-        uint auxSymbolCount;
+        public void writeToFile(String filename)
+        {
+            //layout .obj file 
+            uint filepos = 0x14;                               //coff hdr size
+
+            //sections
+            filepos += (uint)sections.Count * 0x28;            //add sec tbl size
+            for (int i = 0; i < sections.Count; i++)            //add section data sizes
+            {
+                if (sections[i].data.Length > 0)
+                {
+                    sections[i].fileloc = filepos;
+                    sections[i].filesize = (uint)(sections[i].data.Length);
+                    filepos += sections[i].filesize;
+                    uint relocsize = (uint)(sections[i].relocCount * 0x0a);
+                    if (relocsize > 0)
+                    {
+                        sections[i].pRelocations = filepos;
+                        filepos += relocsize;
+                    }
+                }
+            }
+
+            symbolTblAddr = filepos;                           
+            filepos += (uint)symbolTbl.Count * 0x12;           //add symbol tbl size
+            filepos += 0x04;
+            for (int i = 0; i < stringTbl.Count; i++)
+            {
+                filepos += (uint)(stringTbl[i].Length + 1);    //add string tbl size
+            }
+
+            //then write to .obj file
+            OutFile outfile = new OutFile(filename, filepos);
+            writeCoffHeader(outfile);
+            writeSectionTable(outfile);
+            writeSectionData(outfile);
+            writeSymbolTable(outfile);
+            writeStringTable(outfile);
+
+            outfile.write();
+        }
     }
 
 

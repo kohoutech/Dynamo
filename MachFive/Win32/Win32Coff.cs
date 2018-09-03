@@ -22,22 +22,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+//https://docs.microsoft.com/en-us/windows/desktop/debug/pe-format
+
 namespace Origami.Win32
 {
     public class Win32Coff
     {
-        const uint IMAGE_FILE_MACHINE_I386 = 0x14c;
+        const int IMAGE_FILE_MACHINE_I386 = 0x14c;
 
         //coff header fields
-        public uint machine;
+        public int machine;
         public int sectionCount;
         public uint timeStamp;
-        public uint symbolTableAddr;
-        public uint symbolcount;
-        public uint optionalHeaderSize;
-        public uint characteristics;
+        public uint symbolTblAddr;
+        public uint symbolCount;
+        public int optionHdrSize;
+        public int characteristics;
 
-        public List<Section> sections;        
+        public List<Section> sections;
+        public List<CoffSymbol> symbolTbl;
+        public List<String> stringTbl;
 
         //cons
         public Win32Coff()
@@ -45,23 +49,43 @@ namespace Origami.Win32
             machine = IMAGE_FILE_MACHINE_I386;
             sectionCount = 0;
             timeStamp = 0;
-            symbolTableAddr = 0;
-            symbolcount = 0;
-            optionalHeaderSize = 0;
+            symbolTblAddr = 0;
+            symbolCount = 0;
+            optionHdrSize = 0;
             characteristics = 0;
 
             sections = new List<Section>();
+            symbolTbl = new List<CoffSymbol>();
+            stringTbl = new List<string>();
         }
+
+
+        public void addSection(Section sec)
+        {
+            sections.Add(sec);
+        }
+
+        public void addSymbol(CoffSymbol sym)
+        {
+            symbolTbl.Add(sym);
+        }
+
+        public void addString(string str)
+        {
+            stringTbl.Add(str);
+        }
+
+//- reading in ----------------------------------------------------------------
 
         public void readCoffHeader(SourceFile source)
         {
-            machine = source.getTwo();
+            machine = (int)source.getTwo();
             sectionCount = (int)source.getTwo();
             timeStamp = source.getFour();
-            symbolTableAddr = source.getFour();
-            symbolcount = source.getFour();
-            optionalHeaderSize = source.getTwo();
-            characteristics = source.getTwo();         
+            symbolTblAddr = source.getFour();
+            symbolCount = source.getFour();
+            optionHdrSize = (int)source.getTwo();
+            characteristics = (int)source.getTwo();         
         }
 
         public void loadSections(SourceFile source)
@@ -72,6 +96,71 @@ namespace Origami.Win32
                 sections.Add(section);
             }
         }
+
+        public void loadStringTable(SourceFile source)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void loadReloctionTable(SourceFile source)
+        {
+            throw new NotImplementedException();
+        }
+
+//- writing out ---------------------------------------------------------------
+
+        public void writeCoffHeader(OutFile outfile)
+        {
+            outfile.putTwo((uint)machine);
+            outfile.putTwo((uint)sections.Count);
+            outfile.putFour(timeStamp);
+            outfile.putFour(symbolTblAddr);
+            outfile.putFour((uint)symbolTbl.Count);
+            outfile.putTwo((uint)optionHdrSize);
+            outfile.putTwo((uint)characteristics);
+        }
+
+        public void writeSectionTable(OutFile outfile)
+        {
+            for (int i = 0; i < sections.Count; i++)
+            {
+                sections[i].writeSectionTblEntry(outfile);
+            }
+        }
+
+        public void writeSectionData(OutFile outfile)
+        {
+            for (int i = 0; i < sections.Count; i++)
+            {
+                sections[i].writeSectionData(outfile);
+            }
+        }
+
+        public void writeSymbolTable(OutFile outfile)
+        {
+            for (int i = 0; i < symbolTbl.Count; i++)
+            {
+                symbolTbl[i].writeSymbol(outfile);
+            }
+        }
+
+        public void writeStringTable(OutFile outfile)
+        {
+            uint tblSize = 4;
+            for (int i = 0; i < stringTbl.Count; i++)
+            {
+                tblSize += (uint)(stringTbl[i].Length + 1);    
+            }
+            outfile.putFour(tblSize);
+            for (int i = 0; i < stringTbl.Count; i++)
+            {
+                outfile.putString(stringTbl[i]);
+            }
+        }
+
+
+
+//-----------------------------------------------------------------------------
 
         public Section findSection(uint memloc)
         {
@@ -87,4 +176,48 @@ namespace Origami.Win32
             return sec;
         }
     }
+
+//- obj sym table ------------------------------------------------------------
+
+    public class CoffSymbol
+    {
+        String name;
+        uint value;
+        uint sectionNum;
+        uint type;
+        uint storageClass;
+        uint auxSymbolCount;
+
+        public CoffSymbol(String _name, uint _val, uint _num, uint _type, uint _storage, uint _aux )
+        {
+            name = _name;
+            value = _val;
+            sectionNum = _num;
+            type = _type;
+            storageClass = _storage;
+            auxSymbolCount = _aux;
+        }
+
+        internal void writeSymbol(OutFile outfile)
+        {
+            //kludge for testing purposes
+            if (name.Equals("alongstring"))
+            {
+                outfile.putFour(0);
+                outfile.putFour(0x4);
+            }
+            else if (name.Equals("alongerstring"))
+            {
+                outfile.putFour(0);
+                outfile.putFour(0x13);
+            }
+            else outfile.putFixedString(name, 8);
+            outfile.putFour(value);
+            outfile.putTwo(sectionNum);
+            outfile.putTwo(type);
+            outfile.putOne(storageClass);
+            outfile.putOne(auxSymbolCount);
+        }
+    }
+
 }

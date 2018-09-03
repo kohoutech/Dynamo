@@ -27,13 +27,15 @@ namespace Origami.Win32
 {
     public class SourceFile
     {
+        String filename;
         byte[] srcbuf;
         uint srclen;
         uint srcpos;
 
         //for reading fields from a disk file
-        public SourceFile(String filename)
+        public SourceFile(String _filename)
         {
+            filename = _filename;
             srcbuf = File.ReadAllBytes(filename);
             srclen = (uint)srcbuf.Length;
             srcpos = 0;
@@ -42,6 +44,7 @@ namespace Origami.Win32
         //for reading fields from a data buf
         public SourceFile(byte[] data)
         {
+            filename = null;
             srcbuf = data;
             srclen = (uint)srcbuf.Length;
             srcpos = 0;
@@ -78,7 +81,7 @@ namespace Origami.Win32
         {
             byte b = srcbuf[srcpos++];
             byte a = srcbuf[srcpos++];
-            uint result = (uint)(a * 256 + b);
+            uint result = (uint)a * 256 + b;
             return result;
         }
 
@@ -119,6 +122,93 @@ namespace Origami.Win32
             srcpos = pos;
         }
     }
+
+//-----------------------------------------------------------------------------
+
+    public class OutFile
+    {
+        String filename;
+        public byte[] outbuf;
+        public uint outlen;
+        public uint outpos;
+
+        //for writing fields to a disk file
+        public OutFile(String _filename, uint size)
+        {
+            filename = _filename;
+            outlen = size;
+            outbuf = new byte[outlen];
+            outpos = 0;
+        }
+
+        public void setPos(uint pos)
+        {
+            outpos = pos;
+        }
+
+        public void putOne(uint val)
+        {
+            outbuf[outpos++] = (byte)val;
+        }
+
+        public void putTwo(uint val)
+        {
+            outbuf[outpos++] = (byte)(val % 256);
+            val /= 256;
+            outbuf[outpos++] = (byte)(val % 256);
+        }
+
+        public void putFour(uint val)
+        {
+            outbuf[outpos++] = (byte)(val % 256);
+            val /= 256;
+            outbuf[outpos++] = (byte)(val % 256);
+            val /= 256;
+            outbuf[outpos++] = (byte)(val % 256);
+            val /= 256;
+            outbuf[outpos++] = (byte)(val % 256);
+        }
+
+        //asciiz string
+        public void putString(String s)
+        {
+            for (int i = 0; i < s.Length; i++)
+            {
+                outbuf[outpos++] = (byte)s[i];
+            }
+            outbuf[outpos++] = 0x00;
+        }
+
+        //fixed len string
+        public void putFixedString(String s, int width)
+        {
+            int i = (s.Length < width) ? s.Length : width;
+            int rem = width - i;
+            int pos = 0;
+            while (i > 0) 
+            {
+                outbuf[outpos++] = (byte)s[pos++];
+                i--;
+            }
+            while (rem > 0)
+            {
+                outbuf[outpos++] = 0x00;
+                rem--;
+            }            
+        }
+
+        public void putRange(byte[] buf)
+        {
+            Array.Copy(buf, 0, outbuf, outpos, buf.Length);
+            outpos += (uint)buf.Length;
+        }
+
+        internal void write()
+        {
+            File.WriteAllBytes(filename, outbuf);
+        }
+    }
+
 }
 
 //Console.WriteLine("there's no sun in the shadow of the wizard");

@@ -90,6 +90,8 @@ namespace Origami.Win32
         public uint imageBase;
         public byte[] data;
 
+        public List<CoffReloc> relocTbl;
+
         //cons
         public Section()
         {
@@ -108,7 +110,8 @@ namespace Origami.Win32
 
             flags = 0;
             imageBase = 0;
-            data = null;
+            data = new byte[0];
+            relocTbl = new List<CoffReloc>();
         }
 
         public Section(int _secnum, String _secname, uint _memsize, uint _memloc, uint _filesize, uint _fileloc, 
@@ -129,7 +132,8 @@ namespace Origami.Win32
 
             this.flags = _flags;
             this.imageBase = 0;
-            this.data = null;
+            data = new byte[0];
+            relocTbl = new List<CoffReloc>();
         }
 
         public static Section loadSection(SourceFile source)
@@ -153,7 +157,15 @@ namespace Origami.Win32
             return section;
         }
 
+        internal void setData(byte[] _data)
+        {
+            data = _data;
+        }
 
+        internal void addReloc(CoffReloc reloc)
+        {
+            relocTbl.Add(reloc);
+        }
 
 //- flag methods --------------------------------------------------------------
 
@@ -232,6 +244,74 @@ namespace Origami.Win32
                 dataStr.AppendLine(ascii.ToString());
             }
             return dataStr.ToString();
+        }
+
+//- writing out ---------------------------------------------------------------
+
+
+        internal void writeSectionTblEntry(OutFile outfile)
+        {
+            outfile.putFixedString(secName, 8);
+
+            outfile.putFour(memsize);
+            outfile.putFour(memloc);
+            outfile.putFour(filesize);
+            outfile.putFour(fileloc);
+
+            outfile.putFour(pRelocations);
+            outfile.putFour(0);
+            outfile.putTwo((uint)relocTbl.Count);
+            outfile.putTwo(0);
+
+            outfile.putFour(flags);
+        }
+
+        internal void writeSectionData(OutFile outfile)
+        {
+            outfile.putRange(data);
+            if (relocTbl != null)
+            {
+                for (int i = 0; i < relocTbl.Count; i++)
+                {
+                    relocTbl[i].writeToFile(outfile);
+                }
+            }
+        }
+
+    }
+
+//-----------------------------------------------------------------------------
+
+    public class CoffReloc
+    {
+        public enum Reloctype
+        {
+            ABSOLUTE = 0x00,
+            DIR32 = 0x06,
+            DIR32NB = 0x07,
+            SECTION = 0x0a,
+            SECREL = 0x0b,
+            TOKEN = 0x0c,
+            SECREL7 = 0x0d,
+            REL32 = 0x14
+        }
+
+        public uint address;
+        public uint symTblIdx;
+        public Reloctype type;
+
+        public CoffReloc(uint _addr, uint _idx, Reloctype _type)
+        {
+            address = _addr;
+            symTblIdx = _idx;
+            type = _type;
+        }
+
+        internal void writeToFile(OutFile outfile)
+        {
+            outfile.putFour(address);
+            outfile.putFour(symTblIdx);
+            outfile.putTwo((uint)type);            
         }
     }
 }
