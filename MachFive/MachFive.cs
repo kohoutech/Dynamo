@@ -24,6 +24,7 @@ using System.Text;
 
 using MachFive.AST;
 using Origami.Win32;
+using Origami.Asm32;
 
 namespace MachFive
 {
@@ -43,6 +44,20 @@ namespace MachFive
         public MachFive()
         {
             //linker = new Linker();
+        }
+
+        public void assemble()
+        {
+            List<Instruction> instrs = new List<Instruction>();
+            instrs.Add(new Push(new Register(Register.REG32.EBP)));
+            instrs.Add(new Move(new Register(Register.REG32.EBP), new Register(Register.REG32.ESP)));
+            instrs.Add(new Subtract(new Register(Register.REG32.EBP), new Immediate(8, Operand.OPSIZE.DWord), false));
+            instrs.Add(new Move(new Symbol("i"), new Immediate(69, Operand.OPSIZE.DWord)));
+            instrs.Add(new Move(new Register(Register.REG32.EDX), new Symbol("i")));
+            instrs.Add(new Move(new Register(Register.REG32.EAX), new Register(Register.REG32.EDX)));
+            instrs.Add(new Move(new Register(Register.REG32.ESP), new Register(Register.REG32.EBP)));
+            instrs.Add(new Pop(new Register(Register.REG32.EBP)));
+            instrs.Add(new Return(false));
         }
 
 
