@@ -129,6 +129,15 @@ namespace Origami.Asm32
     {
         public REG8 reg8;
 
+        public static Register8 AL = new Register8(REG8.AL);
+        public static Register8 CL = new Register8(REG8.CL);
+        public static Register8 DL = new Register8(REG8.DL);
+        public static Register8 BL = new Register8(REG8.BL);
+        public static Register8 AH = new Register8(REG8.AH);
+        public static Register8 CH = new Register8(REG8.CH);
+        public static Register8 DH = new Register8(REG8.DH);
+        public static Register8 BH = new Register8(REG8.BH);
+
         public Register8(REG8 r8)
         {
             reg8 = r8;
@@ -146,6 +155,15 @@ namespace Origami.Asm32
     {
         public REG16 reg16;
 
+        public static Register16 AX = new Register16(REG16.AX);
+        public static Register16 CX = new Register16(REG16.CX);
+        public static Register16 DX = new Register16(REG16.DX);
+        public static Register16 BX = new Register16(REG16.BX);
+        public static Register16 SP = new Register16(REG16.SP);
+        public static Register16 BP = new Register16(REG16.BP);
+        public static Register16 SI = new Register16(REG16.SI);
+        public static Register16 DI = new Register16(REG16.DI);
+
         public Register16(REG16 r16)
         {
             reg16 = r16;
@@ -162,6 +180,15 @@ namespace Origami.Asm32
     public class Register32 : Register
     {
         public REG32 reg32;
+
+        public static Register32 EAX = new Register32(REG32.EAX);
+        public static Register32 ECX = new Register32(REG32.ECX);
+        public static Register32 EDX = new Register32(REG32.EDX);
+        public static Register32 EBX = new Register32(REG32.EBX);
+        public static Register32 ESP = new Register32(REG32.ESP);
+        public static Register32 EBP = new Register32(REG32.EBP);
+        public static Register32 ESI = new Register32(REG32.ESI);
+        public static Register32 EDI = new Register32(REG32.EDI);        
 
         public Register32(REG32 r32)
         {
