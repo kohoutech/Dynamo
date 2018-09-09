@@ -49,9 +49,10 @@
     <Compile Include="ASM32\Instruction0F.cs" />
     <Compile Include="ASM32\Instruction87.cs" />
     <Compile Include="ASM32\Operand.cs" />
+    <Compile Include="ASM32\Symbol.cs" />
     <Compile Include="Linker.cs" />
     <Compile Include="Loader.cs" />
-    <Compile Include="MachFive.cs" />
+    <Compile Include="Dynamo.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="AST\Node.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

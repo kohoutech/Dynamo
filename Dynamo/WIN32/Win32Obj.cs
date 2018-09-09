@@ -85,14 +85,14 @@ namespace Origami.Win32
             }
 
             //then write to .obj file
-            OutFile outfile = new OutFile(filename, filepos);
+            OutputFile outfile = new OutputFile(filename, filepos);
             writeCoffHeader(outfile);
             writeSectionTable(outfile);
             writeSectionData(outfile);
             writeSymbolTable(outfile);
             writeStringTable(outfile);
 
-            outfile.write();
+            outfile.writeOut();
         }
     }
 

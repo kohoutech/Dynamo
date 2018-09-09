@@ -35,7 +35,7 @@ namespace Origami.Asm32
         public bool lockprefix;
 
         public int opcount;
-        public List<int> bytes;
+        public List<byte> bytes;
 
         public Instruction () 
         {
@@ -44,10 +44,10 @@ namespace Origami.Asm32
             op2 = null;
             op3 = null;
             lockprefix = false;
-            bytes = new List<int>();
+            bytes = null;
         }
 
-        public List<int> getBytes()
+        public List<byte> getBytes()
         {
             return bytes;
         }

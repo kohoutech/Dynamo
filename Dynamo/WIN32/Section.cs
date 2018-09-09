@@ -249,7 +249,7 @@ namespace Origami.Win32
 //- writing out ---------------------------------------------------------------
 
 
-        internal void writeSectionTblEntry(OutFile outfile)
+        internal void writeSectionTblEntry(OutputFile outfile)
         {
             outfile.putFixedString(secName, 8);
 
@@ -266,7 +266,7 @@ namespace Origami.Win32
             outfile.putFour(flags);
         }
 
-        internal void writeSectionData(OutFile outfile)
+        internal void writeSectionData(OutputFile outfile)
         {
             outfile.putRange(data);
             if (relocTbl != null)
@@ -307,7 +307,7 @@ namespace Origami.Win32
             type = _type;
         }
 
-        internal void writeToFile(OutFile outfile)
+        internal void writeToFile(OutputFile outfile)
         {
             outfile.putFour(address);
             outfile.putFour(symTblIdx);

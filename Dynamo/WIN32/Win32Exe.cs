@@ -251,10 +251,10 @@ namespace Origami.Win32
 
         public void writeFile(String filename)
         {
-            OutputFile outfile = new OutputFile(0x200);
+            OutputFile outfile = new OutputFile(filename, 0x200);
             dosHeader.writeOut(outfile);
-            outfile.setZeros(0x200 - 0x40);
-            outfile.writeOut(filename);
+            outfile.putZeros(0x200 - 0x40);
+            outfile.writeOut();
         }
     }
 
@@ -341,26 +341,26 @@ namespace Origami.Win32
             public void writeOut(OutputFile outfile)
             {
 
-                outfile.setTwo(signature);
+                outfile.putTwo(signature);
 
-                outfile.setTwo(lastsize);
-                outfile.setTwo(nblocks);
-                outfile.setTwo(nreloc);
-                outfile.setTwo(hdrsize);
-                outfile.setTwo(minalloc);
-                outfile.setTwo(maxalloc);
-                outfile.setTwo(ss);
-                outfile.setTwo(sp);
-                outfile.setTwo(checksum);
-                outfile.setTwo(ip);
-                outfile.setTwo(cs);
-                outfile.setTwo(relocpos);
-                outfile.setTwo(noverlay);
-                outfile.setZeros(8);
-                outfile.setTwo(oem_id);
-                outfile.setTwo(oem_info);
-                outfile.setZeros(20);
-                outfile.setFour(e_lfanew);                
+                outfile.putTwo(lastsize);
+                outfile.putTwo(nblocks);
+                outfile.putTwo(nreloc);
+                outfile.putTwo(hdrsize);
+                outfile.putTwo(minalloc);
+                outfile.putTwo(maxalloc);
+                outfile.putTwo(ss);
+                outfile.putTwo(sp);
+                outfile.putTwo(checksum);
+                outfile.putTwo(ip);
+                outfile.putTwo(cs);
+                outfile.putTwo(relocpos);
+                outfile.putTwo(noverlay);
+                outfile.putZeros(8);
+                outfile.putTwo(oem_id);
+                outfile.putTwo(oem_info);
+                outfile.putZeros(20);
+                outfile.putFour(e_lfanew);                
             }
         }
 

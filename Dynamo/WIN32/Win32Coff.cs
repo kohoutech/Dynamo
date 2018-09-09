@@ -109,7 +109,7 @@ namespace Origami.Win32
 
 //- writing out ---------------------------------------------------------------
 
-        public void writeCoffHeader(OutFile outfile)
+        public void writeCoffHeader(OutputFile outfile)
         {
             outfile.putTwo((uint)machine);
             outfile.putTwo((uint)sections.Count);
@@ -120,7 +120,7 @@ namespace Origami.Win32
             outfile.putTwo((uint)characteristics);
         }
 
-        public void writeSectionTable(OutFile outfile)
+        public void writeSectionTable(OutputFile outfile)
         {
             for (int i = 0; i < sections.Count; i++)
             {
@@ -128,7 +128,7 @@ namespace Origami.Win32
             }
         }
 
-        public void writeSectionData(OutFile outfile)
+        public void writeSectionData(OutputFile outfile)
         {
             for (int i = 0; i < sections.Count; i++)
             {
@@ -136,7 +136,7 @@ namespace Origami.Win32
             }
         }
 
-        public void writeSymbolTable(OutFile outfile)
+        public void writeSymbolTable(OutputFile outfile)
         {
             for (int i = 0; i < symbolTbl.Count; i++)
             {
@@ -144,7 +144,7 @@ namespace Origami.Win32
             }
         }
 
-        public void writeStringTable(OutFile outfile)
+        public void writeStringTable(OutputFile outfile)
         {
             uint tblSize = 4;
             for (int i = 0; i < stringTbl.Count; i++)
@@ -198,7 +198,7 @@ namespace Origami.Win32
             auxSymbolCount = _aux;
         }
 
-        internal void writeSymbol(OutFile outfile)
+        internal void writeSymbol(OutputFile outfile)
         {
             //kludge for testing purposes
             if (name.Equals("alongstring"))
