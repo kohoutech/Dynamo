@@ -35,6 +35,7 @@ namespace Origami.Win32
         public MsDosHeader dosHeader;
 
         //optional header fields
+        public uint magicNum;
         public uint majorLinkerVersion;
         public uint minorLinkerVersion;
         public uint sizeOfCode;
@@ -95,6 +96,7 @@ namespace Origami.Win32
             dosHeader = null;
 
             //optional header fields
+            magicNum = 0;
             majorLinkerVersion = 0;
             minorLinkerVersion = 0;
             sizeOfCode = 0;
@@ -162,19 +164,22 @@ namespace Origami.Win32
             uint pesig = source.getFour();
             if (pesig != 0x00004550)
             {
-                throw new Win32Exception("this is not a valid win32 executable file");
+                throw new Win32ReadException("this is not a valid win32 executable file");
             }
 
             readCoffHeader(source);
             readOptionalHeader(source);
             loadSections(source);
+            foreach (Section section in sections)
+            {
+                section.imageBase = imageBase;          //sections in exe/dll have an image base
+            }
             //getResourceTable(source);
         }
 
         private void readOptionalHeader(SourceFile source)
         {
-            uint signature = source.getTwo();
-
+            magicNum = source.getTwo();
             majorLinkerVersion = source.getOne();
             minorLinkerVersion = source.getOne();
             sizeOfCode = source.getFour();
@@ -313,7 +318,7 @@ namespace Origami.Win32
                 dosHeader.signature = source.getTwo();
                 if (dosHeader.signature != 0x5a4d)
                 {
-                    throw new Win32Exception("this is not a valid win32 executable file");
+                    throw new Win32ReadException("this is not a valid win32 executable file");
                 }
 
                 dosHeader.lastsize = source.getTwo();
@@ -386,15 +391,6 @@ namespace Origami.Win32
             }
         }
 
-//- error handling ------------------------------------------------------------
-
-    class Win32Exception : Exception
-    {
-        public Win32Exception(string message)
-            : base(message)
-        {
-        }
-    }
 }
 
 //Console.WriteLine("there's no sun in the shadow of the wizard");

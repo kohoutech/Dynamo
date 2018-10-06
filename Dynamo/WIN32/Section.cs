@@ -81,8 +81,8 @@ namespace Origami.Win32
         public uint filesize;               //section size in file
 
         public uint pRelocations;
-        public uint pLinenums;
         public int relocCount;
+        public uint pLinenums;              //line num data is deprecated
         public int linenumCount;
 
         public uint flags;
@@ -92,7 +92,7 @@ namespace Origami.Win32
 
         public List<CoffReloc> relocTbl;
 
-        //cons
+        //new section cons
         public Section()
         {
             secNum = 0;
@@ -114,6 +114,7 @@ namespace Origami.Win32
             relocTbl = new List<CoffReloc>();
         }
 
+        //loaded section cons
         public Section(int _secnum, String _secname, uint _memsize, uint _memloc, uint _filesize, uint _fileloc, 
             uint _pRelocations, uint _pLinenums, int _relocCount, int _linenumCount, uint _flags)
         {
@@ -134,27 +135,6 @@ namespace Origami.Win32
             this.imageBase = 0;
             data = new byte[0];
             relocTbl = new List<CoffReloc>();
-        }
-
-        public static Section loadSection(SourceFile source)
-        {
-
-            Section section = new Section();
-            section.secName = source.getAsciiString(8);
-
-            section.memsize = source.getFour();
-            section.memloc = source.getFour();
-            section.filesize = source.getFour();
-            section.fileloc = source.getFour();
-
-            section.pRelocations = source.getFour();
-            section.pLinenums = source.getFour();
-            section.relocCount = (int)source.getTwo();
-            section.linenumCount = (int)source.getTwo();
-            section.flags = source.getFour();
-            section.data = source.getRange(section.fileloc, section.filesize);          //load section data
-
-            return section;
         }
 
         internal void setData(byte[] _data)
@@ -203,47 +183,28 @@ namespace Origami.Win32
         {
             return (flags & IMAGE_SCN_MEM_WRITE) != 0;
         }
-        
-//- displaying ---------------------------------------------------------------
 
-        public String displayData()
+//- reading in ----------------------------------------------------------------
+
+        public static Section loadSection(SourceFile source)
         {
-            StringBuilder dataStr = new StringBuilder();       //the whole thing as one LONG string
-            StringBuilder ascii = new StringBuilder();      //the ascii representation of the bytes on one line
 
-            int bpos = 0;
-            uint loc = memloc;
-            for (; bpos < data.Length; )
-            {
-                if (bpos % 16 == 0)
-                {
-                    dataStr.Append(loc.ToString("X8") + ": ");         //address field if at start of line
-                }
+            Section section = new Section();
+            section.secName = source.getAsciiString(8);
 
-                uint b = data[bpos];
-                dataStr.Append(b.ToString("X2"));                                              //single byte value in hex
-                dataStr.Append(" ");
-                ascii.Append((b >= 0x20 && b <= 0x7E) ? ((char)b).ToString() : ".");        //and its ascii equivalent
-                bpos++;
-                loc++;
+            section.memsize = source.getFour();
+            section.memloc = source.getFour();
+            section.filesize = source.getFour();
+            section.fileloc = source.getFour();
 
-                if (bpos % 16 == 0)
-                {
-                    dataStr.AppendLine(ascii.ToString());      //ascii field if at end of line
-                    ascii.Clear();
-                }
-            }
-            if (bpos % 16 != 0)             //fill out partial last line
-            {
-                int remainder = (bpos % 16);
-                for (; remainder < 16; remainder++)
-                {
-                    dataStr.Append("   ");                  //space over to line up ascii field
-                    
-                }
-                dataStr.AppendLine(ascii.ToString());
-            }
-            return dataStr.ToString();
+            section.pRelocations = source.getFour();
+            section.pLinenums = source.getFour();
+            section.relocCount = (int)source.getTwo();
+            section.linenumCount = (int)source.getTwo();
+            section.flags = source.getFour();
+            section.data = source.getRange(section.fileloc, section.filesize);          //load section data
+
+            return section;
         }
 
 //- writing out ---------------------------------------------------------------
@@ -277,7 +238,6 @@ namespace Origami.Win32
                 }
             }
         }
-
     }
 
 //-----------------------------------------------------------------------------

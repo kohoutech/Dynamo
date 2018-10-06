@@ -1,5 +1,5 @@
 ﻿/* ----------------------------------------------------------------------------
-MachFive - a backend code generator
+Dynamo - a backend code generator
 Copyright (C) 1997-2018  George E Greaney
 
 This program is free software; you can redistribute it and/or
@@ -22,41 +22,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using MachFive.AST;
+using Dynamo.AST;
 using Origami.Win32;
 using Origami.Asm32;
 
 namespace Dynamo
 {
     class Dynamo
-    {
-        static Dynamo machFive;
-
+    {        
         Linker linker;
+
+        static void parseOptions(Dynamo dynamo, string[] args)
+        {
+        }
 
         static void Main(string[] args)
         {
-            machFive = new Dynamo();
-            machFive.generate();
-            
+            Dynamo dynamo = new Dynamo();
+            parseOptions(dynamo, args);
+            dynamo.generate();            
         }
 
         public Dynamo()
         {
-            //linker = new Linker();
+            linker = new Linker();
         }
 
         public void assemble()
         {
             List<Instruction> instrs = new List<Instruction>();
-            instrs.Add(new Push(new Register32(REG32.EBP)));
-            instrs.Add(new Move(new Register32(REG32.EBP), new Register32(REG32.ESP)));
-            instrs.Add(new Subtract(new Register32(REG32.EBP), new Immediate(8, Operand.OPSIZE.DWord), false));
-            instrs.Add(new Move(new Symbol("i"), new Immediate(69, Operand.OPSIZE.DWord)));
-            instrs.Add(new Move(new Register32(REG32.EDX), new Symbol("i")));
-            instrs.Add(new Move(new Register32(REG32.EAX), new Register32(REG32.EDX)));
-            instrs.Add(new Move(new Register32(REG32.ESP), new Register32(REG32.EBP)));
-            instrs.Add(new Pop(new Register32(REG32.EBP)));
+            instrs.Add(new Push(Register32.EBP));
+            instrs.Add(new Move(Register32.EBP, Register32.ESP));
+            instrs.Add(new Subtract(Register32.EBP, new Immediate(8, OPSIZE.DWord), false));
+            instrs.Add(new Move(new Symbol("i"), new Immediate(69, OPSIZE.DWord)));
+            instrs.Add(new Move(Register32.EDX, new Symbol("i")));
+            instrs.Add(new Move(Register32.EAX, Register32.EDX));
+            instrs.Add(new Move(Register32.ESP, Register32.EBP));
+            instrs.Add(new Pop(Register32.EBP));
             instrs.Add(new Return(false));
         }
 

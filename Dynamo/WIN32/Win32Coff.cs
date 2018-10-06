@@ -36,7 +36,7 @@ namespace Origami.Win32
         public uint timeStamp;
         public uint symbolTblAddr;
         public uint symbolCount;
-        public int optionHdrSize;
+        public int optionalHdrSize;
         public int characteristics;
 
         public List<Section> sections;
@@ -51,7 +51,7 @@ namespace Origami.Win32
             timeStamp = 0;
             symbolTblAddr = 0;
             symbolCount = 0;
-            optionHdrSize = 0;
+            optionalHdrSize = 0;
             characteristics = 0;
 
             sections = new List<Section>();
@@ -84,7 +84,7 @@ namespace Origami.Win32
             timeStamp = source.getFour();
             symbolTblAddr = source.getFour();
             symbolCount = source.getFour();
-            optionHdrSize = (int)source.getTwo();
+            optionalHdrSize = (int)source.getTwo();
             characteristics = (int)source.getTwo();         
         }
 
@@ -116,7 +116,7 @@ namespace Origami.Win32
             outfile.putFour(timeStamp);
             outfile.putFour(symbolTblAddr);
             outfile.putFour((uint)symbolTbl.Count);
-            outfile.putTwo((uint)optionHdrSize);
+            outfile.putTwo((uint)optionalHdrSize);
             outfile.putTwo((uint)characteristics);
         }
 
@@ -157,8 +157,6 @@ namespace Origami.Win32
                 outfile.putString(stringTbl[i]);
             }
         }
-
-
 
 //-----------------------------------------------------------------------------
 
@@ -220,4 +218,13 @@ namespace Origami.Win32
         }
     }
 
+//- error handling ------------------------------------------------------------
+
+    class Win32ReadException : Exception
+    {
+        public Win32ReadException(string message)
+            : base(message)
+        {
+        }
+    }
 }

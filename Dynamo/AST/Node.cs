@@ -1,5 +1,5 @@
 ﻿/* ----------------------------------------------------------------------------
-MachFive - a backend code generator
+Dynamo - a backend code generator
 Copyright (C) 1997-2018  George E Greaney
 
 This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MachFive.AST
+namespace Dynamo.AST
 {
     //base class
     class Node
