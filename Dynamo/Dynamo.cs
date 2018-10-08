@@ -31,6 +31,7 @@ namespace Dynamo
     class Dynamo
     {        
         Linker linker;
+        List<Module> modules;
 
         static void parseOptions(Dynamo dynamo, string[] args)
         {
@@ -45,6 +46,7 @@ namespace Dynamo
 
         public Dynamo()
         {
+            modules = new List<Module>();
             linker = new Linker();
         }
 
@@ -106,6 +108,11 @@ namespace Dynamo
             objfile.addString("alongerstring");
 
             objfile.writeToFile("test.obj");
+        }
+
+        public void link()
+        {
+            linker.BuildExecutable();
         }
     }
 }
