@@ -36,7 +36,17 @@ namespace Dynamo
 
         }
 
-        internal void BuildExecutable()
+        public void loadLinkFiles(List<string> linkfiles)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setModules(List<Module> modules)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public void BuildExecutable()
         {
             Win32Exe exeImage = new Win32Exe();
             exeImage.layoutImage();

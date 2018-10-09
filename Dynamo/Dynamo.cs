@@ -31,6 +31,7 @@ namespace Dynamo
     class Dynamo
     {        
         Linker linker;
+        List<String> linkfiles;
         List<Module> modules;
 
         static void parseOptions(Dynamo dynamo, string[] args)
@@ -41,12 +42,14 @@ namespace Dynamo
         {
             Dynamo dynamo = new Dynamo();
             parseOptions(dynamo, args);
-            dynamo.generate();            
+            dynamo.generate();
+            dynamo.link();
         }
 
         public Dynamo()
         {
             modules = new List<Module>();
+            linkfiles = new List<string>();
             linker = new Linker();
         }
 
@@ -112,6 +115,8 @@ namespace Dynamo
 
         public void link()
         {
+            linker.loadLinkFiles(linkfiles);
+            linker.setModules(modules);
             linker.BuildExecutable();
         }
     }
