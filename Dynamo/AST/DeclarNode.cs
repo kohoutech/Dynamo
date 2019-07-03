@@ -1,5 +1,5 @@
 ﻿/* ----------------------------------------------------------------------------
-Dynamo - a backend code generator
+LibOriAST - a library for working with abstract syntax trees
 Copyright (C) 1997-2019  George E Greaney
 
 This program is free software; you can redistribute it and/or
@@ -16,35 +16,33 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ----------------------------------------------------------------------------*/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Origami.AST;
-
-namespace Dynamo
+namespace Origami.AST
 {
-    class Loader
+    public class DeclarNode : Node
     {
-        public static void RegisterNodeType()
+    }
+
+    public class DeclarVar : DeclarNode
+    {
+        String varName;
+        String varType;
+
+        public DeclarVar(String _name, String _type)
         {
+            varName = _name;
+            varType = _type;
         }
 
-        public Node loadASTFile(String filename)
+        public override Operand eval()
         {
-            StmtBlockNode root = new StmtBlockNode();
 
-            root.decls.Add(new DeclarVar("i", "int"));
-            root.decls.Add(new DeclarVar("j", "int"));
-            root.decls.Add(new DeclarVar("k", "int"));
-
-            root.statements.Add(new AssignNode(new Identifier("i"), new PrimaryIntConst(2)));
-            root.statements.Add(new AssignNode(new Identifier("j"), new PrimaryIntConst(3)));
-            root.statements.Add(new AssignNode(new Identifier("k"), new AddOpNode(new PrimaryId("i"), new PrimaryId("j"))));
-            root.statements.Add(new PrintVarNode(new Identifier("k")));
-
-            return root;
+            return null;
         }
     }
 }

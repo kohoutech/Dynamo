@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
-Dynamo - a backend code generator
-Copyright (C) 1997-2018  George E Greaney
+LibOriAST - a library for working with abstract syntax trees
+Copyright (C) 1997-2019  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,140 +22,48 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Dynamo.AST
+namespace Origami.AST
 {
     //base class
-    class Node
+    public class Node
+    {
+        public virtual Operand eval()
+        {
+            return null;
+        }
+    }
+
+    public class Operand
     {
     }
 
-//- operation nodes -----------------------------------------------------------
-
-    class AddOpNode : Node
+    public class Identifier : Operand
     {
+        String id;
+
+        public Identifier(String _id)
+        {
+            id = _id;
+        }
     }
 
-    class SubtractOpNode : Node
+    public class IntConst : Operand
     {
+        int val;
+
+        public IntConst(int _val)
+        {
+            val = _val;
+        }
     }
 
-    class MultiplyOpNode : Node
+    public class IntVar : Operand
     {
-    }
+        public int val;
 
-    class DivideOpNode : Node
-    {
-    }
-
-    class ModOpNode : Node
-    {
-    }
-
-    class NotOpNode : Node
-    {
-    }
-
-    class AndOpNode : Node
-    {
-    }
-
-    class OrOpNode : Node
-    {
-    }
-
-    class XorOpNode : Node
-    {
-    }
-
-    class ShiftLeftOpNode : Node
-    {
-    }
-
-    class ShiftRightOpNode : Node
-    {
-    }
-
-    class IncrementOpNode : Node
-    {
-    }
-
-    class DecrementOpNode : Node
-    {
-    }
-
-
-//- conditional nodes -----------------------------------------------------------
-
-    class EqualConditNode : Node
-    {
-    }
-
-    class NotEqualConditNode : Node
-    {
-    }
-
-    class LessThanConditNode : Node
-    {
-    }
-
-    class LessEqualConditNode : Node
-    {
-    }
-
-    class GreaterThanConditNode : Node
-    {
-    }
-
-    class GreaterEqualConditNode : Node
-    {
-    }
-
-    
-//- statement nodes -----------------------------------------------------------
-
-    //base statement node
-    class StatementNode : Node
-    {
-        StatementNode nextStmt;
-    }
-
-    class IfNode : StatementNode
-    {
-    }
-
-    class IfElseNode : StatementNode
-    {
-    }
-
-    class WhileNode : StatementNode
-    {
-    }
-
-    class DoWhileNode : StatementNode
-    {
-    }
-
-    class SwitchNode : StatementNode
-    {
-    }
-
-    class CaseNode : StatementNode
-    {
-    }
-
-    class ForNode : StatementNode
-    {
-    }
-
-    class BreakNode : StatementNode
-    {
-    }
-
-    class ContinueNode : StatementNode
-    {
-    }
-
-    class ReturnNode : StatementNode
-    {
+        public IntVar()
+        {
+            val = 0;
+        }
     }
 }

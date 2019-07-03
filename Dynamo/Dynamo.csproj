@@ -8,8 +8,8 @@
     <ProjectGuid>{4A38AEF4-E83A-4F6A-BF17-C80CA5CD107F}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MachFive</RootNamespace>
-    <AssemblyName>MachFive</AssemblyName>
+    <RootNamespace>Dynamo</RootNamespace>
+    <AssemblyName>Dynamo</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -55,6 +55,9 @@
     <Compile Include="ASM32\Operand.cs" />
     <Compile Include="ASM32\Register.cs" />
     <Compile Include="ASM32\Symbol.cs" />
+    <Compile Include="AST\DeclarNode.cs" />
+    <Compile Include="AST\ExprNode.cs" />
+    <Compile Include="AST\StmtNode.cs" />
     <Compile Include="Linker.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="Dynamo.cs" />
