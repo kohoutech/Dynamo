@@ -27,10 +27,7 @@ namespace Origami.AST
     //base class
     public class Node
     {
-        public virtual Operand eval()
-        {
-            return null;
-        }
+        NodeType nodetype;
     }
 
     public class Operand
@@ -65,5 +62,10 @@ namespace Origami.AST
         {
             val = 0;
         }
+    }
+
+    public enum NodeType
+    {
+        AssignStmt, IfStmt,ForStmt, WhileStmt
     }
 }

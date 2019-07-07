@@ -35,7 +35,7 @@ namespace Dynamo
         List<Module> modules;
 
         Loader loader;
-        Node root;
+        public Node root;
 
         static void parseOptions(Dynamo dynamo, string[] args)
         {
@@ -50,7 +50,7 @@ namespace Dynamo
             //dynamo.link();
 
             dynamo.load();
-            dynamo.execute();
+            dynamo.eval(dynamo.root);
         }
 
         public Dynamo()
@@ -66,9 +66,10 @@ namespace Dynamo
             root = loader.loadASTFile("test.ast");
         }
 
-        private void execute()
+        private void eval(Node node)
         {
-            root.eval();
+
+            
         }
 
         //- old stuff ----------------------------------------------
