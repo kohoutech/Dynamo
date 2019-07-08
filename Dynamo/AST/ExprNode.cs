@@ -34,6 +34,7 @@ namespace Origami.AST
 
         public PrimaryId(String _id)
         {
+            nodetype = NodeType.PrimaryId;
             id = _id;
         }
     }
@@ -44,6 +45,7 @@ namespace Origami.AST
 
         public PrimaryIntConst(int _constVal)
         {
+            nodetype = NodeType.PrimaryConst;
             constVal = _constVal;
         }
     }
@@ -57,6 +59,7 @@ namespace Origami.AST
 
         public AddOpNode(ExprNode _op1, ExprNode _op2)
         {
+            nodetype = NodeType.AddExpr;
             op1 = _op1;
             op2 = _op2;
         }

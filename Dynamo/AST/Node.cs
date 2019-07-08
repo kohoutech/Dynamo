@@ -27,7 +27,11 @@ namespace Origami.AST
     //base class
     public class Node
     {
-        NodeType nodetype;
+        public NodeType nodetype;
+    }
+
+    public class Value
+    {
     }
 
     public class Operand
@@ -66,6 +70,26 @@ namespace Origami.AST
 
     public enum NodeType
     {
-        AssignStmt, IfStmt,ForStmt, WhileStmt
+        //declarations
+        VarDeclar,
+
+        //expressions
+        PrimaryId,
+        PrimaryConst,
+        AddExpr,
+
+        //statements
+        BlockStmt,
+        AssignStmt,
+        IfStmt,
+        SwitchStmt,
+        CaseStmt,
+        WhileStmt,
+        DoWhileStmt,
+        ForStmt,
+        BreakStmt,
+        ContinueStmt,
+        ReturnStmt,
+        PrintVarNode
     }
 }

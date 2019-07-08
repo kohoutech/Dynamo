@@ -30,90 +30,118 @@ namespace Origami.AST
     {
     }
 
-    public class StmtBlockNode : StmtNode
+    //compound stmt
+    public class BlockStmt : StmtNode
     {
         public List<DeclarNode> decls;
         public List<StmtNode> statements;
 
-        public StmtBlockNode()
+        public BlockStmt()
         {
+            nodetype = NodeType.BlockStmt;
             decls = new List<DeclarNode>();
             statements = new List<StmtNode>();
         }
-
-        public override Operand eval()
-        {
-            foreach (DeclarNode decl in decls)
-            {
-                decl.eval();
-            }
-
-            foreach (StmtNode stmt in statements)
-            {
-                stmt.eval();
-            }
-            return null;
-        }
     }
 
-    public class AssignNode : StmtNode
+    //expression stmt
+    public class AssignStmt : StmtNode
     {
         Identifier lhs;
         ExprNode rhs;
 
-        public AssignNode(Identifier _lhs, ExprNode _rhs)
+        public AssignStmt(Identifier _lhs, ExprNode _rhs)
         {
+            nodetype = NodeType.AssignStmt;
             lhs = _lhs;
             rhs = _rhs;
         }
     }
 
-    public class IfNode : StmtNode
+    //selection stmt
+    public class IfStmt : StmtNode    
     {
+        public IfStmt()
+        {
+            nodetype = NodeType.IfStmt;
+        }
     }
 
-    public class IfElseNode : StmtNode
+    public class SwitchStmt : StmtNode
     {
+        public SwitchStmt()
+        {
+            nodetype = NodeType.SwitchStmt;
+        }
     }
 
-    public class WhileNode : StmtNode
+    public class CaseStmt : StmtNode
     {
+        public CaseStmt()
+        {
+            nodetype = NodeType.CaseStmt;
+        }
     }
 
-    public class DoWhileNode : StmtNode
+    //iteration stmt
+    public class WhileStmt : StmtNode
     {
+        public WhileStmt()
+        {
+            nodetype = NodeType.WhileStmt;
+        }
     }
 
-    public class SwitchNode : StmtNode
+    public class DoWhileStmt : StmtNode
     {
+        public DoWhileStmt()
+        {
+            nodetype = NodeType.DoWhileStmt;
+        }
     }
 
-    public class CaseNode : StmtNode
+    public class ForStmt : StmtNode
     {
+        public ForStmt()
+        {
+            nodetype = NodeType.ForStmt;
+        }
     }
 
-    public class ForNode : StmtNode
+    //jump stmt
+    public class BreakStmt : StmtNode
     {
+        public BreakStmt()
+        {
+            nodetype = NodeType.BreakStmt;
+        }
     }
 
-    public class BreakNode : StmtNode
+    public class ContinueStmt : StmtNode
     {
+        public ContinueStmt()
+        {
+            nodetype = NodeType.ContinueStmt;
+        }
     }
 
-    public class ContinueNode : StmtNode
+    public class ReturnStmt : StmtNode
     {
+        public ReturnStmt()
+        {
+            nodetype = NodeType.ReturnStmt;
+        }
     }
 
-    public class ReturnNode : StmtNode
-    {
-    }
-
-    public class PrintVarNode : StmtNode
+    //built in output stmt
+    //may been removed at some future time
+    public class PrintVarStmt : StmtNode
     {
         Identifier id;
 
-        public PrintVarNode(Identifier _id)
+        public PrintVarStmt(Identifier _id)
         {
+            nodetype = NodeType.PrintVarNode;
             id = _id;
         }
     }

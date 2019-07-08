@@ -1,5 +1,5 @@
 ﻿/* ----------------------------------------------------------------------------
-LibOriAST - a library for working with abstract syntax trees
+Dynamo - a backend code generator
 Copyright (C) 1997-2019  George E Greaney
 
 This program is free software; you can redistribute it and/or
@@ -22,22 +22,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Origami.AST
+namespace Dynamo.SymbolTable
 {
-    public class DeclarNode : Node
+    class SymTable
     {
-    }
+        private Dynamo dynamo;
 
-    public class VarDeclar : DeclarNode
-    {
-        String varName;
-        String varType;
-
-        public VarDeclar(String _name, String _type)
+        public SymTable(Dynamo _dynamo)
         {
-            nodetype = NodeType.VarDeclar;
-            varName = _name;
-            varType = _type;
+            dynamo = _dynamo;
         }
     }
 }

@@ -26,15 +26,20 @@ using Origami.AST;
 using Origami.Win32;
 using Origami.Asm32;
 
+using Dynamo.SymbolTable;
+using Dynamo.CodeGenerator;
+
 namespace Dynamo
 {
     class Dynamo
-    {        
+    {
         Linker linker;
         List<String> linkfiles;
         List<Module> modules;
 
         Loader loader;
+        public SymTable symTable;
+        public CodeGen codeGen;
         public Node root;
 
         static void parseOptions(Dynamo dynamo, string[] args)
@@ -55,9 +60,12 @@ namespace Dynamo
 
         public Dynamo()
         {
-            modules = new List<Module>();
-            linkfiles = new List<string>();
-            linker = new Linker();
+            //modules = new List<Module>();
+            //linkfiles = new List<string>();
+            //linker = new Linker();
+
+            symTable = new SymTable(this);
+            codeGen = new CodeGen(this);
         }
 
         private void load()
@@ -66,10 +74,63 @@ namespace Dynamo
             root = loader.loadASTFile("test.ast");
         }
 
-        private void eval(Node node)
+        private Value eval(Node node)
         {
-
-            
+            Value val = null;
+            switch (node.nodetype)
+            {
+                case NodeType.VarDeclar:
+                    codeGen.evalVarDeclaration(node);
+                    break;
+                case NodeType.PrimaryId:
+                    codeGen.evalPrimaryId(node);
+                    break;
+                case NodeType.PrimaryConst:
+                    codeGen.evalPrimaryConst(node);
+                    break;
+                case NodeType.AddExpr:
+                    codeGen.evalAddExpression(node);
+                    break;
+                case NodeType.BlockStmt:
+                    codeGen.evalBlockStatement(node);
+                    break;
+                case NodeType.AssignStmt:
+                    codeGen.evalAssignStatement(node);
+                    break;
+                case NodeType.IfStmt:
+                    codeGen.evalIfStatement(node);
+                    break;
+                case NodeType.SwitchStmt:
+                    codeGen.evalSwitchStatement(node);
+                    break;
+                case NodeType.CaseStmt:
+                    codeGen.evalCaseStatement(node);
+                    break;
+                case NodeType.WhileStmt:
+                    codeGen.evalwhileStatement(node);
+                    break;
+                case NodeType.DoWhileStmt:
+                    codeGen.evalDoWhileStatement(node);
+                    break;
+                case NodeType.ForStmt:
+                    codeGen.evalForStatement(node);
+                    break;
+                case NodeType.BreakStmt:
+                    codeGen.evalBreakStatement(node);
+                    break;
+                case NodeType.ContinueStmt:
+                    codeGen.evalContinueStatement(node);
+                    break;
+                case NodeType.ReturnStmt:
+                    codeGen.evalReturnStatement(node);
+                    break;
+                case NodeType.PrintVarNode:
+                    codeGen.evalPrintVarStatement(node);
+                    break;
+                default:
+                    break;
+            }
+            return val;
         }
 
         //- old stuff ----------------------------------------------

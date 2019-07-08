@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ----------------------------------------------------------------------------*/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,16 +34,16 @@ namespace Dynamo
 
         public Node loadASTFile(String filename)
         {
-            StmtBlockNode root = new StmtBlockNode();
+            BlockStmt root = new BlockStmt();
 
-            root.decls.Add(new DeclarVar("i", "int"));
-            root.decls.Add(new DeclarVar("j", "int"));
-            root.decls.Add(new DeclarVar("k", "int"));
+            root.decls.Add(new VarDeclar("i", "int"));
+            root.decls.Add(new VarDeclar("j", "int"));
+            root.decls.Add(new VarDeclar("k", "int"));
 
-            root.statements.Add(new AssignNode(new Identifier("i"), new PrimaryIntConst(2)));
-            root.statements.Add(new AssignNode(new Identifier("j"), new PrimaryIntConst(3)));
-            root.statements.Add(new AssignNode(new Identifier("k"), new AddOpNode(new PrimaryId("i"), new PrimaryId("j"))));
-            root.statements.Add(new PrintVarNode(new Identifier("k")));
+            root.statements.Add(new AssignStmt(new Identifier("i"), new PrimaryIntConst(2)));
+            root.statements.Add(new AssignStmt(new Identifier("j"), new PrimaryIntConst(3)));
+            root.statements.Add(new AssignStmt(new Identifier("k"), new AddOpNode(new PrimaryId("i"), new PrimaryId("j"))));
+            root.statements.Add(new PrintVarStmt(new Identifier("k")));
 
             return root;
         }
