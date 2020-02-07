@@ -1,2 +1,2 @@
-# Tidepool
+# Dynamo
 a backend code generator
