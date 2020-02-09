@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
 Dynamo - a backend code generator
-Copyright (C) 1997-2019  George E Greaney
+Copyright (C) 1997-2020  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,96 +22,171 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Dynamo.CodeGenerator
+using Origami.OIL;
+using Origami.Asm32;
+
+namespace Dynamo
 {
     class CodeGen
     {
-        private Dynamo dynamo;
+        public Dynamo dynamo;
+        public List<Instruction> insns;
 
         public CodeGen(Dynamo _dynamo)
         {
-            // TODO: Complete member initialization
             dynamo = _dynamo;
+            insns = new List<Instruction>();
         }
 
-        internal void evalBlockStatement(Origami.AST.Node node)
+        internal void evalBlockStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalAssignStatement(Origami.AST.Node node)
+        internal void evalAssignStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalIfStatement(Origami.AST.Node node)
+        internal void evalIfStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalSwitchStatement(Origami.AST.Node node)
+        internal void evalSwitchStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalCaseStatement(Origami.AST.Node node)
+        internal void evalCaseStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalwhileStatement(Origami.AST.Node node)
+        internal void evalwhileStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalDoWhileStatement(Origami.AST.Node node)
+        internal void evalDoWhileStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalForStatement(Origami.AST.Node node)
+        internal void evalForStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalBreakStatement(Origami.AST.Node node)
+        internal void evalBreakStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalContinueStatement(Origami.AST.Node node)
+        internal void evalContinueStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalReturnStatement(Origami.AST.Node node)
+        internal void evalReturnStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalPrintVarStatement(Origami.AST.Node node)
+        internal void evalPrintVarStatement(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalVarDeclaration(Origami.AST.Node node)
+        internal void evalVarDeclaration(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalPrimaryId(Origami.AST.Node node)
+        internal void evalPrimaryId(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalPrimaryConst(Origami.AST.Node node)
+        internal void evalPrimaryConst(OILNode node)
         {
             throw new NotImplementedException();
         }
 
-        internal void evalAddExpression(Origami.AST.Node node)
+        internal void evalAddExpression(OILNode node)
         {
             throw new NotImplementedException();
+        }
+
+        static void emit_data(Module module)
+        {
+        }
+
+        void emit_text(Module module)
+        {
+        }
+
+        public List<Instruction> generate(Module module)
+        {
+            emit_data(module);
+            emit_text(module);
+
+            
+        //    Value val = null;
+        //    switch (node.nodetype)
+        //    {
+        //        case NodeType.VarDeclar:
+        //            codeGen.evalVarDeclaration(node);
+        //            break;
+        //        case NodeType.PrimaryId:
+        //            codeGen.evalPrimaryId(node);
+        //            break;
+        //        case NodeType.PrimaryConst:
+        //            codeGen.evalPrimaryConst(node);
+        //            break;
+        //        case NodeType.AddExpr:
+        //            codeGen.evalAddExpression(node);
+        //            break;
+        //        case NodeType.BlockStmt:
+        //            codeGen.evalBlockStatement(node);
+        //            break;
+        //        case NodeType.AssignStmt:
+        //            codeGen.evalAssignStatement(node);
+        //            break;
+        //        case NodeType.IfStmt:
+        //            codeGen.evalIfStatement(node);
+        //            break;
+        //        case NodeType.SwitchStmt:
+        //            codeGen.evalSwitchStatement(node);
+        //            break;
+        //        case NodeType.CaseStmt:
+        //            codeGen.evalCaseStatement(node);
+        //            break;
+        //        case NodeType.WhileStmt:
+        //            codeGen.evalwhileStatement(node);
+        //            break;
+        //        case NodeType.DoWhileStmt:
+        //            codeGen.evalDoWhileStatement(node);
+        //            break;
+        //        case NodeType.ForStmt:
+        //            codeGen.evalForStatement(node);
+        //            break;
+        //        case NodeType.BreakStmt:
+        //            codeGen.evalBreakStatement(node);
+        //            break;
+        //        case NodeType.ContinueStmt:
+        //            codeGen.evalContinueStatement(node);
+        //            break;
+        //        case NodeType.ReturnStmt:
+        //            codeGen.evalReturnStatement(node);
+        //            break;
+        //        case NodeType.PrintVarNode:
+        //            codeGen.evalPrintVarStatement(node);
+        //            break;
+        //        default:
+        //            break;
+        //    }
+            return insns;
         }
     }
 }

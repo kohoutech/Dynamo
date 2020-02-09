@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
 Dynamo - a backend code generator
-Copyright (C) 1997-2018  George E Greaney
+Copyright (C) 1997-2020  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,38 +21,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.IO;
 
+using Origami.Asm32;
 using Origami.Win32;
 
 namespace Dynamo
 {
-
-
-    public class Linker
+    class Assembler
     {
-        public Linker()
-        {
+        public Dynamo dynamo;
 
+        public Assembler(Dynamo _dynamo)
+        {
+            dynamo = _dynamo;
         }
 
-        public void loadLinkFiles(List<string> linkfiles)
+        public Win32Coff assemble(List<Instruction> insns)
         {
-            throw new NotImplementedException();
-        }
-
-        public void setModules(List<Module> modules)
-        {
-            throw new NotImplementedException();
-        }
-        
-        public void BuildExecutable()
-        {
-            Win32Exe exeImage = new Win32Exe();
-            exeImage.layoutImage();
-            exeImage.writeFile("test.exe");
+            Win32Coff objfile = new Win32Coff();
+            return objfile;
         }
     }
 }
-
-//Console.WriteLine("done!");

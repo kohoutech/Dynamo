@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
 Dynamo - a backend code generator
-Copyright (C) 1997-2019  George E Greaney
+Copyright (C) 1997-2020  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,135 +22,58 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Origami.AST;
-using Origami.Win32;
+using Origami.OIL;
 using Origami.Asm32;
+using Origami.Win32;
 
 using Dynamo.SymbolTable;
-using Dynamo.CodeGenerator;
 
 namespace Dynamo
 {
     class Dynamo
     {
-        Linker linker;
-        List<String> linkfiles;
-        List<Module> modules;
-
-        Loader loader;
-        public SymTable symTable;
+        public Options options;
         public CodeGen codeGen;
-        public Node root;
+        public SymTable symTable;
+        public Assembler assembler;
 
-        static void parseOptions(Dynamo dynamo, string[] args)
-        {
-        }
+        public Module module;
+        public List<Instruction> insns;
+        public Win32Coff objfile;
 
-        static void Main(string[] args)
-        {
-            Dynamo dynamo = new Dynamo();
-
-            //parseOptions(dynamo, args);
-            //dynamo.generate();
-            //dynamo.link();
-
-            dynamo.load();
-            dynamo.eval(dynamo.root);
-        }
+        //---------------------------------------------------------------------
 
         public Dynamo()
         {
-            //modules = new List<Module>();
-            //linkfiles = new List<string>();
-            //linker = new Linker();
-
+            options = new Options();
             symTable = new SymTable(this);
             codeGen = new CodeGen(this);
+            assembler = new Assembler(this);
         }
 
-        private void load()
+        //set options from the cmd line when used as a stand alone program
+        public void setOptions(String[] args)
         {
-            loader = new Loader();
-            root = loader.loadASTFile("test.ast");
+            options.parseOptions(args);
         }
 
-        private Value eval(Node node)
+        //read an OIL module tree from a file
+        public void load()
         {
-            Value val = null;
-            switch (node.nodetype)
-            {
-                case NodeType.VarDeclar:
-                    codeGen.evalVarDeclaration(node);
-                    break;
-                case NodeType.PrimaryId:
-                    codeGen.evalPrimaryId(node);
-                    break;
-                case NodeType.PrimaryConst:
-                    codeGen.evalPrimaryConst(node);
-                    break;
-                case NodeType.AddExpr:
-                    codeGen.evalAddExpression(node);
-                    break;
-                case NodeType.BlockStmt:
-                    codeGen.evalBlockStatement(node);
-                    break;
-                case NodeType.AssignStmt:
-                    codeGen.evalAssignStatement(node);
-                    break;
-                case NodeType.IfStmt:
-                    codeGen.evalIfStatement(node);
-                    break;
-                case NodeType.SwitchStmt:
-                    codeGen.evalSwitchStatement(node);
-                    break;
-                case NodeType.CaseStmt:
-                    codeGen.evalCaseStatement(node);
-                    break;
-                case NodeType.WhileStmt:
-                    codeGen.evalwhileStatement(node);
-                    break;
-                case NodeType.DoWhileStmt:
-                    codeGen.evalDoWhileStatement(node);
-                    break;
-                case NodeType.ForStmt:
-                    codeGen.evalForStatement(node);
-                    break;
-                case NodeType.BreakStmt:
-                    codeGen.evalBreakStatement(node);
-                    break;
-                case NodeType.ContinueStmt:
-                    codeGen.evalContinueStatement(node);
-                    break;
-                case NodeType.ReturnStmt:
-                    codeGen.evalReturnStatement(node);
-                    break;
-                case NodeType.PrintVarNode:
-                    codeGen.evalPrintVarStatement(node);
-                    break;
-                default:
-                    break;
-            }
-            return val;
+            module = OILCan.loadOILCan(options.OILname);
         }
 
-        //- old stuff ----------------------------------------------
-        public void assemble()
+        //get a OIL module tree from the front end when used as a DLL
+        public void setModule(Module _module)
         {
-            //List<Instruction> instrs = new List<Instruction>();
-            //instrs.Add(new Push(Register32.EBP));
-            //instrs.Add(new Move(Register32.EBP, Register32.ESP));
-            //instrs.Add(new Subtract(Register32.EBP, new Immediate(8, OPSIZE.DWord), false));
-            //instrs.Add(new Move(new Symbol("i"), new Immediate(69, OPSIZE.DWord)));
-            //instrs.Add(new Move(Register32.EDX, new Symbol("i")));
-            //instrs.Add(new Move(Register32.EAX, Register32.EDX));
-            //instrs.Add(new Move(Register32.ESP, Register32.EBP));
-            //instrs.Add(new Pop(Register32.EBP));
-            //instrs.Add(new Return(false));
+            module = _module;
         }
 
-
+        //generate a list of instructions & psuedo ops from the module tree
         public void generate()
         {
+            insns = codeGen.generate(module);
+
             //linker.BuildExecutable();
 
             //Win32Obj objfile = new Win32Obj();
@@ -194,13 +117,28 @@ namespace Dynamo
             //objfile.writeToFile("test.obj");
         }
 
-        public void link()
+        //assemble the instruction list into an object file
+        public void assemble()
         {
-            linker.loadLinkFiles(linkfiles);
-            linker.setModules(modules);
-            linker.BuildExecutable();
+            objfile = assembler.assemble(insns);
+            //List<Instruction> instrs = new List<Instruction>();
+            //instrs.Add(new Push(Register32.EBP));
+            //instrs.Add(new Move(Register32.EBP, Register32.ESP));
+            //instrs.Add(new Subtract(Register32.EBP, new Immediate(8, OPSIZE.DWord), false));
+            //instrs.Add(new Move(new Symbol("i"), new Immediate(69, OPSIZE.DWord)));
+            //instrs.Add(new Move(Register32.EDX, new Symbol("i")));
+            //instrs.Add(new Move(Register32.EAX, Register32.EDX));
+            //instrs.Add(new Move(Register32.ESP, Register32.EBP));
+            //instrs.Add(new Pop(Register32.EBP));
+            //instrs.Add(new Return(false));
+        }
+
+        //write the assembled object file out
+        public void write()
+        {
+            objfile.write(options.ObjName);
         }
     }
 }
 
-//Console.WriteLine("done!");
+//Console.WriteLine("There's no sun in the shadow of the Wizard");

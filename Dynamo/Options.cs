@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
 Dynamo - a backend code generator
-Copyright (C) 1997-2019  George E Greaney
+Copyright (C) 1997-2020  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,30 +22,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Origami.AST;
 
 namespace Dynamo
 {
-    class Loader
+    public class Options
     {
-        public static void RegisterNodeType()
+        public String OILname;
+        public String ObjName;
+
+        public void parseOptions(string[] args)
         {
-        }
-
-        public Node loadASTFile(String filename)
-        {
-            BlockStmt root = new BlockStmt();
-
-            root.decls.Add(new VarDeclar("i", "int"));
-            root.decls.Add(new VarDeclar("j", "int"));
-            root.decls.Add(new VarDeclar("k", "int"));
-
-            root.statements.Add(new AssignStmt(new Identifier("i"), new PrimaryIntConst(2)));
-            root.statements.Add(new AssignStmt(new Identifier("j"), new PrimaryIntConst(3)));
-            root.statements.Add(new AssignStmt(new Identifier("k"), new AddOpNode(new PrimaryId("i"), new PrimaryId("j"))));
-            root.statements.Add(new PrintVarStmt(new Identifier("k")));
-
-            return root;
+            
         }
     }
 }

@@ -1,2 +1,2 @@
 # Dynamo
-a backend code generator
+a backend i32/64 code generator

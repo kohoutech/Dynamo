@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
-LibOriAST - a library for working with abstract syntax trees
-Copyright (C) 1997-2019  George E Greaney
+Dynamo - a backend code generator
+Copyright (C) 1997-2020  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,22 +22,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Origami.AST
+//driver for running Dynamo as stand-alone program
+
+namespace Dynamo
 {
-    public class DeclarNode : Node
+    class Program
     {
-    }
-
-    public class VarDeclar : DeclarNode
-    {
-        String varName;
-        String varType;
-
-        public VarDeclar(String _name, String _type)
+        static void Main(string[] args)
         {
-            nodetype = NodeType.VarDeclar;
-            varName = _name;
-            varType = _type;
+            Dynamo dynamo = new Dynamo();
+
+            dynamo.setOptions(args);
+            dynamo.load();
+            dynamo.generate();
+            dynamo.assemble();
+            dynamo.write();
         }
     }
 }

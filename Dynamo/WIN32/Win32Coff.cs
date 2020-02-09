@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
 Origami Win32 Library
-Copyright (C) 1998-2018  George E Greaney
+Copyright (C) 1998-2020  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,7 +41,9 @@ namespace Origami.Win32
 
         public List<Section> sections;
         public List<CoffSymbol> symbolTbl;
-        public List<String> stringTbl;
+        
+        public Dictionary<int, String> stringTbl;
+        public int strTblIdx;
 
         //cons
         public Win32Coff()
@@ -56,7 +58,9 @@ namespace Origami.Win32
 
             sections = new List<Section>();
             symbolTbl = new List<CoffSymbol>();
-            stringTbl = new List<string>();
+
+            stringTbl = new Dictionary<int, string>();
+            strTblIdx = 4;
         }
 
 
@@ -70,9 +74,11 @@ namespace Origami.Win32
             symbolTbl.Add(sym);
         }
 
-        public void addString(string str)
+        public int addString(string str)
         {
-            stringTbl.Add(str);
+            stringTbl.Add(strTblIdx, str);
+            strTblIdx += (str.Length + 1);
+            return strTblIdx;
         }
 
 //- reading in ----------------------------------------------------------------
@@ -99,7 +105,25 @@ namespace Origami.Win32
 
         public void loadStringTable(SourceFile source)
         {
-            throw new NotImplementedException();
+            uint pos = symbolTblAddr + (symbolCount * 0x12);
+            source.seek(pos);
+            uint len = source.getFour() - 4;
+            byte[] data = source.getRange(len);
+            String str = "";
+            int idx = 4;
+            for (int i = 0; i < len; i++)
+            {
+                if (data[i] != 0)
+                {
+                    str += (char)data[i];
+                }
+                else
+                {
+                    stringTbl.Add(idx, str);
+                    str = "";
+                    idx = i + 5;
+                }
+            }
         }
 
         public void loadReloctionTable(SourceFile source)
@@ -120,21 +144,21 @@ namespace Origami.Win32
             outfile.putTwo((uint)characteristics);
         }
 
-        public void writeSectionTable(OutputFile outfile)
-        {
-            for (int i = 0; i < sections.Count; i++)
-            {
-                sections[i].writeSectionTblEntry(outfile);
-            }
-        }
+        //public void writeSectionTable(OutputFile outfile)
+        //{
+        //    for (int i = 0; i < sections.Count; i++)
+        //    {
+        //        sections[i].writeSectionTblEntry(outfile);
+        //    }
+        //}
 
-        public void writeSectionData(OutputFile outfile)
-        {
-            for (int i = 0; i < sections.Count; i++)
-            {
-                sections[i].writeSectionData(outfile);
-            }
-        }
+        //public void writeSectionData(OutputFile outfile)
+        //{
+        //    for (int i = 0; i < sections.Count; i++)
+        //    {
+        //        sections[i].writeSectionData(outfile);
+        //    }
+        //}
 
         public void writeSymbolTable(OutputFile outfile)
         {
@@ -156,6 +180,10 @@ namespace Origami.Win32
             {
                 outfile.putString(stringTbl[i]);
             }
+        }
+
+        public void write(String filename)
+        {
         }
 
 //-----------------------------------------------------------------------------
