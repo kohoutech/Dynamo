@@ -53,6 +53,7 @@
     <Compile Include="ASM32\InstructionSSE2.cs" />
     <Compile Include="ASM32\InstructionSys.cs" />
     <Compile Include="ASM32\Operand.cs" />
+    <Compile Include="ASM32\Directive.cs" />
     <Compile Include="ASM32\Register.cs" />
     <Compile Include="ASM32\Symbol.cs" />
     <Compile Include="Assembler\Assembler.cs" />

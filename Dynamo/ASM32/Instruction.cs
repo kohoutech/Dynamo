@@ -1,6 +1,6 @@
 ﻿/* ----------------------------------------------------------------------------
 Origami Asm32 Library
-Copyright (C) 1998-2018  George E Greaney
+Copyright (C) 1998-2020  George E Greaney
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -52,9 +52,9 @@ namespace Origami.Asm32
 
         }
 
-//- convert instr to its opcode byte representation ---------------------------
+        //- convert instr to its opcode byte representation -------------------
 
-        public enum OpMode { REGREG, REGMEM, MEMREG}
+        public enum OpMode { REGREG, REGMEM, MEMREG }
 
         public List<byte> getModrm(Operand op1, Operand op2, out OpMode opmode, out OPSIZE size)
         {
@@ -116,7 +116,7 @@ namespace Origami.Asm32
             return bytes;
         }
 
-//- display -------------------------------------------------------------------
+        //- display -----------------------------------------------------------
 
         const int BYTESFIELDWIDTH = 6;              //in bytes = each byte takes up 3 spaces
         const int OPCODEFIELDWIDTH = 12;            //in actual spaces
@@ -134,7 +134,12 @@ namespace Origami.Asm32
             //operands field
             if (opcount > 0)
             {
-                result = result + " " + op1.ToString();
+                String spacer = " ";
+                if (result.Length < 12)
+                {
+                    spacer = "            ".Substring(result.Length);
+                }
+                result = result + spacer + op1.ToString();
             }
             if (opcount > 1)
             {
@@ -190,6 +195,8 @@ namespace Origami.Asm32
             return asmLine.ToString();
         }
     }
+
+    //- catch all -------------------------------------------------------------
 
     //for byte sequences that don't match any known instruction
     public class UnknownOp : Instruction
