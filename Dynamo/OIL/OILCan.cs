@@ -41,14 +41,28 @@ namespace Origami.OIL
 
         //- reading in --------------------------------------------------------
 
-        public Module load(String filename)
+        public Module load()
         {
-            oilcan = EnamlData.loadFromFile(filename);
+            Module module = null;
+            try
+            {
+                oilcan = EnamlData.loadFromFile(filename);
 
-            string oilVersion = oilcan.getStringValue("OILCan.version", "0.20");
-            string modname = oilcan.getStringValue("module.name", "");
+                string oilVersion = oilcan.getStringValue("OILCan.version", "");
+                string modname = oilcan.getStringValue("module.name", "");
 
-            Module module = new Module(modname);
+                module = new Module(modname);
+
+                List<String> funcs = oilcan.getPathKeysStartingWith("module", "func");
+                foreach (String funcname in funcs)
+                {
+                }
+
+            }
+            catch (ENAMLException e)
+            {
+                return null;
+            }
 
             return module;
         }

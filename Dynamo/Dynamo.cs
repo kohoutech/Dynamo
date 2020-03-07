@@ -32,7 +32,6 @@ namespace Dynamo
 {
     class Dynamo
     {
-        public Options options;
         public CodeGen codeGen;
         public SymTable symTable;
         public Assembler assembler;
@@ -45,33 +44,15 @@ namespace Dynamo
 
         public Dynamo()
         {
-            options = new Options();
             symTable = new SymTable(this);
             codeGen = new CodeGen(this);
             assembler = new Assembler(this);
         }
 
-        //set options from the cmd line when used as a stand alone program
-        public void setOptions(String[] args)
-        {
-            options.parseOptions(args);
-        }
-
-        //read an OIL module tree from a file
-        public void load()
-        {
-            module = OILCan.loadOILCan(options.OILname);
-        }
-
-        //get a OIL module tree from the front end when used as a DLL
-        public void setModule(Module _module)
+        //generate a list of instructions & psuedo ops from the module tree
+        public void generate(Module _module)
         {
             module = _module;
-        }
-
-        //generate a list of instructions & psuedo ops from the module tree
-        public void generate()
-        {
             insns = codeGen.generate(module);
 
             //linker.BuildExecutable();
@@ -134,9 +115,9 @@ namespace Dynamo
         }
 
         //write the assembled object file out
-        public void write()
+        public void write(String outname)
         {
-            objfile.write(options.ObjName);
+            //objfile.write(options.ObjName);
         }
     }
 }

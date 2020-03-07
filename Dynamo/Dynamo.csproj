@@ -61,6 +61,7 @@
     <Compile Include="ENAML\EnamlData.cs" />
     <Compile Include="OIL\OILCan.cs" />
     <Compile Include="Dynamo.cs" />
+    <Compile Include="OIL\OILDrum.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="OIL\OILNode.cs" />
     <Compile Include="Program.cs" />

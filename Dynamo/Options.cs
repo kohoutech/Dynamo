@@ -30,7 +30,7 @@ namespace Dynamo
         public String OILname;
         public String ObjName;
 
-        public void parseOptions(string[] args)
+        public Options(string[] args)
         {
             
         }

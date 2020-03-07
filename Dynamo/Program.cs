@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Origami.OIL;
+
 //driver for running Dynamo as stand-alone program
 
 namespace Dynamo
@@ -30,13 +32,18 @@ namespace Dynamo
     {
         static void Main(string[] args)
         {
+            Options options = new Options(args);                    //parse the cmd line args
+
+            String outname = args[0];
+
+            OILCan oilCan = new OILCan("test2.oil.txt");
+            Module module = oilCan.load();
+            
             Dynamo dynamo = new Dynamo();
 
-            dynamo.setOptions(args);
-            dynamo.load();
-            dynamo.generate();
+            dynamo.generate(module);
             dynamo.assemble();
-            dynamo.write();
+            dynamo.write(outname);
         }
     }
 }
