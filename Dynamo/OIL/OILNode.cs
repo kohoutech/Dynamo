@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+//still a lot to sort out & clean up
+
 namespace Origami.OIL
 {
     //base OIL class
@@ -46,29 +48,6 @@ namespace Origami.OIL
             typedefs = new List<TypeDeclNode>();
             globals = new List<VarDeclNode>();
             funcs = new List<FuncDefNode>();
-        }
-    }
-
-    public class FuncDefNode : OILNode
-    {
-        public String name;
-        public TypeDeclNode returnType;
-        public List<ParamDeclNode> paramList;           //'params' is a reserved word in C#
-        public bool isVaradic;
-        public List<VarDeclNode> locals;
-        public List<StatementNode> body;
-        public bool isInline;
-
-        public FuncDefNode()
-        {
-            type = OILType.FuncDecl;
-            name = "";
-            returnType = null;
-            paramList = null;
-            isVaradic = false;
-            locals = new List<VarDeclNode>();
-            body = null;
-            isInline = false;
         }
     }
 
@@ -115,6 +94,29 @@ namespace Origami.OIL
             type = OILType.ParamDecl;
             name = "";
             pType = null;
+        }
+    }
+
+    public class FuncDefNode : Declaration
+    {
+        public String name;
+        public TypeDeclNode returnType;
+        public List<ParamDeclNode> paramList;           //'params' is a reserved word in C#
+        public bool isVaradic;
+        public List<VarDeclNode> locals;
+        public List<StatementNode> body;
+        public bool isInline;
+
+        public FuncDefNode()
+        {
+            type = OILType.FuncDecl;
+            name = "";
+            returnType = null;
+            paramList = new List<ParamDeclNode>();
+            isVaradic = false;
+            locals = new List<VarDeclNode>();
+            body = null;
+            isInline = false;
         }
     }
 

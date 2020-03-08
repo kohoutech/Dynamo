@@ -17,7 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ----------------------------------------------------------------------------*/
 
-//ENAML - (just what) Everybody Needs - Another Markup Language 
+//ENAML - (just what) Everybody Needs - Another Markup Language
+
+//version 1.0.0 
 
 using System;
 using System.Collections.Generic;
@@ -29,17 +31,37 @@ namespace Origami.ENAML
 {
     public class EnamlData
     {
+        const int INDENTSIZE = 2;
+
         ENAMLStem root;
+        int indentSize = INDENTSIZE;
+        String indentStr = "  ";
 
         public EnamlData()
         {
-            root = null;
+            root = new ENAMLStem("root");
+        }
+
+        //indent defaults to two spaces, but user can make this wider
+        public void setIndentSize(int size)
+        {
+            if (size != indentSize && size >= INDENTSIZE)
+            {
+                indentSize = size;
+                String s = "";
+                for (int i = 0; i < indentSize; i++)
+                {
+                    s += " ";
+                }
+                indentStr = s;
+            }            
         }
 
         //---------------------------------------------------------------------
         // READING IN
         //---------------------------------------------------------------------
-        
+
+        //load & parse ENAML data from file into tree of stems & leaves
         public static EnamlData loadFromFile(String filename)
         {
             EnamlData enaml = null;
@@ -50,25 +72,20 @@ namespace Origami.ENAML
             }
             catch (Exception e)
             {
-                throw new ENAMLException("Error reading ENAML file from disk");
+                throw new ENAMLReadException(e.Message);
             }
+
+            int lineNum = 0;
             enaml = new EnamlData();
-            enaml.parseRoot(lines);
+            enaml.root = enaml.parseSubtree(lines, ref lineNum, "root");
             return enaml;
         }
 
         char[] wspace = new char[] { ' ' };
 
-        //no error checking yet!
-        private void parseRoot(string[] lines)
+        private ENAMLStem parseSubtree(string[] lines, ref int lineNum, string path)
         {
-            int lineNum = 0;
-            root = parseSubtree(lines, ref lineNum);
-        }
-
-        private ENAMLStem parseSubtree(string[] lines, ref int lineNum)
-        {
-            ENAMLStem curStem = new ENAMLStem();
+            ENAMLStem curStem = new ENAMLStem(path);
             int indentLevel = -1;
             while (lineNum < lines.Length)
             {
@@ -85,21 +102,22 @@ namespace Origami.ENAML
                 if (indent < indentLevel)
                 {
                     lineNum--;              //this line is not in subgroup so back up one line
-                    return curStem;
+                    return curStem;         //and we're done with this level, go back to parent
                 }
                 else
                 {
                     line = line.TrimStart(wspace);                              //we have the indent count, remove the leading spaces
                     int colonpos = line.IndexOf(':');
                     String name = line.Substring(0, colonpos).Trim();
-                    if (colonpos + 1 != line.Length)                                //nnn : xxx
+                    String subpath = path + "." + name;
+                    if (colonpos + 1 != line.Length)                            //nnn : xxx
                     {
                         String val = line.Substring(colonpos + 1).Trim();
-                        curStem.children.Add(name, new ENAMLLeaf(val));
+                        curStem.children.Add(name, new ENAMLLeaf(subpath, val));
                     }
                     else
                     {
-                        ENAMLStem substem = parseSubtree(lines, ref lineNum);
+                        ENAMLStem substem = parseSubtree(lines, ref lineNum, subpath);   //nnn :  - start of a subgroup
                         curStem.children.Add(name, substem);
                     }
                 }
@@ -136,7 +154,7 @@ namespace Origami.ENAML
                     }
                     catch (Exception e)
                     {
-                        throw new ENAMLException("Error reading integer value from ENAML file");
+                        throw new ENAMLFormatException("Error reading integer value from ENAML data");
                     }
                 }
             }
@@ -157,31 +175,121 @@ namespace Origami.ENAML
                     }
                     catch (Exception e)
                     {
-                        throw new ENAMLException("Error reading float value from ENAML file");
+                        throw new ENAMLFormatException("Error reading float value from ENAML data");
                     }
                 }
             }
             return defval;
         }
 
-        //returns an empty list if the path is invalid
-        public List<String> getPathKeys(String path)
+        public bool getBoolValue(String path, bool defval)
         {
-            //List<string> keyList = getSubpathKeys(root, path);
-            //return keyList;
-            return null;
+            if (root != null)
+            {
+                String strval = findLeafValue(path);
+                if (strval != null)
+                {
+                    if (strval.ToUpper().Equals("TRUE"))
+                    {
+                        return true;
+                    }
+                    else if (strval.ToUpper().Equals("FALSE"))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return defval;
         }
 
-        public List<string> getPathKeysStartingWith(String path, String str)
+        //- path management ---------------------------------------------------
+
+        //check if the path actually exists
+        public bool doesPathExist(String path)
         {
-            throw new NotImplementedException();
+            int endpos = path.LastIndexOf('.');
+            if (endpos != -1)                                           //if we have a path xxx.yyy.zzz
+            {
+                string subpath = path.Substring(0, endpos);             //get the xxx.yyy part
+                ENAMLStem stem = getSubPath(subpath);                   //and find the stem node for that path
+                if (stem != null)
+                {
+                    string childname = path.Substring(endpos + 1);
+                    return (stem.children.ContainsKey(childname));         //then check if it has zzz node (stem or leaf)
+                }                
+            }
+            else
+            {
+                return root.children.ContainsKey(path);       //if we just have xxx, then check if child of root
+            }
+            return false;            
+        }
+
+        //returns an empty list if the path is invalid or ends in a leaf (ie has no children)
+        //that way you can do a foreach loop on the list w/o first having to test for a null return val
+        public List<String> getPathKeys(String path)
+        {
+            List<String> keyList = new List<string>();
+
+            ENAMLStem subpath = getSubPath(path);
+
+            if (subpath != null)
+            {
+                foreach (string key in subpath.children.Keys)
+                {
+                    keyList.Add(key);
+                }
+            }
+
+            return keyList;
+        }
+
+        //removes stem & leaf nodes below end of supplied path AND works back up the path 
+        //removing all stem nodes that don't have other leaf nodes
+        //returns true if path removed, false if path was invalid
+        public bool removePath(string path)
+        {
+            if (!doesPathExist(path))
+            {
+                return false;
+            }
+
+            int leafpos = path.LastIndexOf('.');
+            string leafname = path.Substring(leafpos + 1);
+            path = path.Substring(0, leafpos);                      //split aaa.bbb.ccc.ddd into aaa.bbb.ccc and ddd
+            removeSubPath(root, path, leafname);                    //remove subpath ddd, and any empty node before it
+            return true;
+        }
+
+        private void removeSubPath(ENAMLStem subpath, string path, string endName)
+        {
+            if (path.Length == 0)
+            {
+                if (subpath != null && subpath.children.ContainsKey(endName))
+                {
+                    subpath.children.Remove(endName);           //from the example above. we're at ccc now, so remove ddd
+                }
+            }
+            else
+            {
+                int pathpos = path.IndexOf('.');                
+                string name = (pathpos != -1) ? path.Substring(0, pathpos) : path;      //split aaa.bbb.ccc into aaa and bbb.ccc
+                string rest = (pathpos != -1) ? path.Substring(pathpos + 1) : "";
+                ENAMLStem node = (ENAMLStem)subpath.children[name];                     //get node aaa
+                removeSubPath(node, rest, endName);                                     //and remove subpath ddd from bbb.ccc (etc...)
+                if (node.children.Count == 0)                       //if aaa has no children now
+                {
+                    subpath.children.Remove(name);                  //then remove it too
+                }
+            }
         }
 
         char[] sep = new char[] { '.' };
 
+        //gets stem node at end of a subpath (a path with the ending leaf node removed)
         private ENAMLStem getSubPath(String path)
         {
-            string[] parts = path.Split(sep);
+            string[] parts = path.Split(sep);                   //split xxx.yyy.zzz into (xxx, yyy, zzz)
             ENAMLNode subtree = root;
             for (int i = 0; i < parts.Length; i++)
             {
@@ -195,13 +303,14 @@ namespace Origami.ENAML
                     return null;
                 }
             }
-            if (subtree is ENAMLStem)
+            if (subtree is ENAMLStem)               //last node in subpath has to be a stem node
             {
                 return (ENAMLStem)subtree;
             }
             return null;
         }
 
+        //gets the string from a leaf node at end of a path
         private String findLeafValue(String path)
         {
             String result = null;
@@ -212,9 +321,9 @@ namespace Origami.ENAML
             int leafpos = path.LastIndexOf('.');
             if (leafpos != -1)
             {
-                path = path.Substring(0, leafpos);      
                 leafname = path.Substring(leafpos + 1);     //split the leaf node name from the end of the path
-                subpath = getSubPath(path);
+                path = path.Substring(0, leafpos);
+                subpath = getSubPath(path);                 //get stem node that is parent to this leaf node
             }
             else
             {
@@ -224,49 +333,14 @@ namespace Origami.ENAML
 
             if ((subpath != null) && (subpath.children.ContainsKey(leafname)))
             {
-                ENAMLNode leaf = subpath.children[leafname];
-                if (leaf != null && leaf is ENAMLLeaf)
+                ENAMLNode leaf = subpath.children[leafname];        //then get the leaf node child
+                if (leaf != null && leaf is ENAMLLeaf)              //these should both be true, check anyway
                 {
-                    result = ((ENAMLLeaf)leaf).value;
+                    result = ((ENAMLLeaf)leaf).value;               //and return it's value
                 }
             }
 
             return result;
-        }
-
-        private void getSubpathKeys(ENAMLStem subtree, String path)
-        {
-            String result = null;
-
-            String leafname = "";
-            ENAMLStem subpath = null;
-
-            int leafpos = path.LastIndexOf('.');
-            if (leafpos != -1)
-            {
-                path = path.Substring(0, leafpos);
-                leafname = path.Substring(leafpos + 1);     //split the leaf node name from the end of the path
-                subpath = getSubPath(path);
-            }
-            else
-            {
-                leafname = path;
-                subpath = root;
-            }
-
-
-                //if (subtree.children.ContainsKey(path))      //at end of path
-                //{
-                //    ENAMLNode val = subtree.children[path];
-                //    if (val != null && val is ENAMLStem)
-                //    {
-                //        foreach (string key in ((ENAMLStem)val).children.Keys)
-                //        {
-                //            keyList.Add(key);
-                //        }
-                //    }
-                //}
-                        
         }
 
         //---------------------------------------------------------------------
@@ -283,7 +357,7 @@ namespace Origami.ENAML
             }
             catch (Exception e)
             {
-                throw new ENAMLException("Error writing ENAML file to disk");
+                throw new ENAMLWriteException(e.Message);
             }            
         }
 
@@ -292,7 +366,7 @@ namespace Origami.ENAML
             List<string> childNameList = new List<string>(stem.children.Keys);
             foreach (String childname in childNameList)
             {
-                storeNode(lines, stem.children[childname], indent + ((stem != root) ? "  " : ""), childname);
+                storeNode(lines, stem.children[childname], indent, childname);
             }
         }
 
@@ -306,11 +380,34 @@ namespace Origami.ENAML
             else
             {
                 lines.Add(line);
-                storeSubTree(lines, (ENAMLStem)node, indent);
+                storeSubTree(lines, (ENAMLStem)node, indent + indentStr);
             }
         }
 
         //- setting values ----------------------------------------------------
+
+        public void setStringValue(String path, String str)
+        {
+            setLeafValue(path, root, str);
+        }
+        
+        public void setIntValue(String path, int val)
+        {
+            String intstr = val.ToString();
+            setLeafValue(path, root, intstr);
+        }
+
+        public void setFloatValue(String path, double val)
+        {
+            String floatstr = val.ToString("G17");
+            setLeafValue(path, root, floatstr);
+        }
+
+        public void setBoolValue(String path, bool val)
+        {
+            String boolstr = val ? "true" : "false";
+            setLeafValue(path, root, boolstr);
+        }
 
         private void setLeafValue(String path, ENAMLStem subtree, String val)
         {
@@ -321,7 +418,7 @@ namespace Origami.ENAML
                 String subpath = path.Substring(dotpos + 1);
                 if (!subtree.children.ContainsKey(name))
                 {
-                    subtree.children[name] = new ENAMLStem();
+                    subtree.children[name] = new ENAMLStem(subtree.fullpath + '.' + name);
                 }
                 setLeafValue(subpath, (ENAMLStem)subtree.children[name], val);
             }
@@ -329,42 +426,21 @@ namespace Origami.ENAML
             {
                 if (!subtree.children.ContainsKey(path))
                 {
-                    subtree.children[path] = new ENAMLLeaf(val);
+                    subtree.children[path] = new ENAMLLeaf(subtree.fullpath + '.' + path, val);
                 }
                 else
                 {
-                    ((ENAMLLeaf)subtree.children[path]).value = val;
+                    ENAMLNode pathend = subtree.children[path];         //last node in a path has to be a leaf node
+                    if (pathend is ENAMLLeaf)
+                    {
+                        ((ENAMLLeaf)pathend).value = val;               //to (re)store val in
+                    }
+                    else
+                    {
+                        throw new ENAMLPathException("path [" + pathend.fullpath + "is not an endpoint");
+                    }
                 }
             }
-        }
-
-        public void setStringValue(String path, String str)
-        {
-            if (root == null)
-            {
-                root = new ENAMLStem();
-            }
-            setLeafValue(path, root, str);
-        }
-        
-        public void setIntValue(String path, int val)
-        {
-            String intstr = val.ToString();
-            if (root == null)
-            {
-                root = new ENAMLStem();
-            }
-            setLeafValue(path, root, intstr);
-        }
-
-        public void setFloatValue(String path, double val)
-        {
-            String floatstr = val.ToString("G17");
-            if (root == null)
-            {
-                root = new ENAMLStem();
-            }
-            setLeafValue(path, root, floatstr);
         }
 
         //- internal tree node classes -----------------------------------------------------
@@ -372,13 +448,19 @@ namespace Origami.ENAML
         //base class
         private class ENAMLNode
         {
+            public string fullpath;
+
+            public ENAMLNode(string path)
+            {
+                fullpath = path;
+            }
         }
 
         private class ENAMLStem : ENAMLNode
         {
             public Dictionary<string, ENAMLNode> children;
 
-            public ENAMLStem()
+            public ENAMLStem(string path) : base(path)
             {
                 children = new Dictionary<string, ENAMLNode>();
             }
@@ -388,15 +470,16 @@ namespace Origami.ENAML
         {
             public String value;
 
-            public ENAMLLeaf(String val)
+            public ENAMLLeaf(string path, String val) : base(path)
             {
                 value = val;
             }
         }
     }
 
-    //- exception class -----------------------------------------------------
+    //- exceptions ------------------------------------------------------------
 
+    //base class - if you don't want a more specific detail as to what went wrong
     public class ENAMLException : Exception
     {
         public ENAMLException(String msg)
@@ -404,4 +487,37 @@ namespace Origami.ENAML
         {
         }
     }
+
+    public class ENAMLReadException : ENAMLException
+    {
+        public ENAMLReadException(String msg)
+            : base(msg)
+        {
+        }
+    }
+
+    public class ENAMLWriteException : ENAMLException
+    {
+        public ENAMLWriteException(String msg)
+            : base(msg)
+        {
+        }
+    }
+
+    public class ENAMLFormatException : ENAMLException
+    {
+        public ENAMLFormatException(String msg)
+            : base(msg)
+        {
+        }
+    }
+
+    public class ENAMLPathException : ENAMLException
+    {
+        public ENAMLPathException(String msg)
+            : base(msg)
+        {
+        }
+    }
+
 }
