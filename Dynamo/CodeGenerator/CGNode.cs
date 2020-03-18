@@ -24,26 +24,31 @@ using System.Text;
 
 using Origami.OIL;
 
-//driver for running Dynamo as stand-alone program
+//code generator nodes that are attached to the matching OIL nodes & assist in the code generation for that node
 
-namespace Dynamo
+namespace Dynamo.CodeGenerator
 {
-    class Program
+    class CGFuncDefNode : CGNode
     {
-        static void Main(string[] args)
+        public FuncDefNode funcdef;
+        public int stacksize;
+
+        public CGFuncDefNode(FuncDefNode _funcdef)
         {
-            Options options = new Options(args);                    //parse the cmd line args
+            funcdef = _funcdef;
+            funcdef.cgnode = this;
+        }
+    }
 
-            String outname = args[0];
+    class CGVarDeclNode : CGNode
+    {
+        public VarDeclNode vardecl;
+        public int addr;
 
-            OILCan oilCan = new OILCan("test2.oil.txt");
-            Module module = oilCan.load();
-            
-            Dynamo dynamo = new Dynamo();
-
-            dynamo.generate(module);
-            dynamo.assemble();
-            dynamo.write(outname);
+        public CGVarDeclNode(VarDeclNode _vardecl)
+        {
+            vardecl = _vardecl;
+            vardecl.cgnode = this;
         }
     }
 }

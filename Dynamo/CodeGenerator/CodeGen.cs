@@ -25,7 +25,7 @@ using System.Text;
 using Origami.OIL;
 using Origami.Asm32;
 
-namespace Dynamo
+namespace Dynamo.CodeGenerator
 {
     class CodeGen
     {
@@ -118,18 +118,43 @@ namespace Dynamo
             throw new NotImplementedException();
         }
 
-        static void emit_data(Module module)
+        static void emitGlobalData(Module module)
         {
         }
 
-        void emit_text(Module module)
+        void emitFunctions(Module module)
         {
+            Console.WriteLine(".segment text");
+            foreach (FuncDefNode func in module.funcs)
+            {
+                CGFuncDefNode cgfunc = new CGFuncDefNode(func);
+
+                Console.WriteLine(".global " + func.name);
+                Console.WriteLine();
+                Console.WriteLine(func.name + ":");
+
+                //for now, the only type we handle are ints, so each local var is 4 bytes on the stack
+                cgfunc.stacksize = 0;
+                for (int i = 0; i < func.locals.Count; i++)
+                {
+                    VarDeclNode var = func.locals[i];
+                    CGVarDeclNode cgvar = new CGVarDeclNode(var);
+                    cgfunc.stacksize += 4;
+                    cgvar.addr = cgfunc.stacksize;
+                }                
+
+                //prolog
+                Console.WriteLine("push ebp");
+                Console.WriteLine("mov ebp,esp");
+                Console.WriteLine("sub esp, " + cgfunc.stacksize);
+
+            }
         }
 
         public List<Instruction> generate(Module module)
-        {
-            emit_data(module);
-            emit_text(module);
+        {            
+            emitGlobalData(module);
+            emitFunctions(module);
 
             
         //    Value val = null;
@@ -190,3 +215,5 @@ namespace Dynamo
         }
     }
 }
+
+//Console.WriteLine("There's no sun in the shadow of the Wizard");

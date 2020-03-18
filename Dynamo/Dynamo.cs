@@ -27,6 +27,7 @@ using Origami.Asm32;
 using Origami.Win32;
 
 using Dynamo.SymbolTable;
+using Dynamo.CodeGenerator;
 
 namespace Dynamo
 {
@@ -40,6 +41,12 @@ namespace Dynamo
         public List<Instruction> insns;
         public Win32Coff objfile;
 
+        static void Main(string[] args)
+        {
+            Dynamo dynamo = new Dynamo();
+            dynamo.generate(args);
+        }
+
         //---------------------------------------------------------------------
 
         public Dynamo()
@@ -50,10 +57,19 @@ namespace Dynamo
         }
 
         //generate a list of instructions & psuedo ops from the module tree
-        public void generate(Module _module)
+        public void generate(string[] args)
         {
-            module = _module;
+            Options options = new Options(args);                    //parse the cmd line args
+
+            //temporary debugging shortcut
+            String srcname = args[0];
+            String outname = args[1];
+
+            OILCan oilCan = new OILCan(srcname);
+            module = oilCan.load();
+
             insns = codeGen.generate(module);
+            assembler.writeOut(outname, insns);
 
             //linker.BuildExecutable();
 

@@ -41,5 +41,10 @@ namespace Dynamo
             Win32Coff objfile = new Win32Coff();
             return objfile;
         }
+
+        internal void writeOut(string outname, List<Instruction> insns)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

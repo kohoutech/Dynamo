@@ -31,6 +31,12 @@ namespace Origami.OIL
     {
         public OILType type;
         public String OILname;
+        public CGNode cgnode;
+    }
+
+    //code generator base class
+    public class CGNode
+    {
     }
 
     //- external defs ---------------------------------------------------------

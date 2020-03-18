@@ -4,6 +4,6 @@
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>test2.obj</StartArguments>
+    <StartArguments>test3.oil.txt test3.asm</StartArguments>
   </PropertyGroup>
 </Project>
