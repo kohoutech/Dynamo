@@ -31,7 +31,7 @@ namespace Dynamo.CodeGenerator
     class CGFuncDefNode : CGNode
     {
         public FuncDefNode funcdef;
-        public int stacksize;
+        public uint stacksize;
 
         public CGFuncDefNode(FuncDefNode _funcdef)
         {
@@ -40,10 +40,28 @@ namespace Dynamo.CodeGenerator
         }
     }
 
+    class CGParamDeclNode : CGNode
+    {
+        public enum VarType { GLOBAL, LOCAL };
+
+        public ParamDeclNode paramdecl;
+        public uint addr;
+        public VarType type;
+
+        public CGParamDeclNode(ParamDeclNode _paramdecl)
+        {
+            paramdecl = _paramdecl;
+            paramdecl.cgnode = this;
+        }
+    }
+
     class CGVarDeclNode : CGNode
     {
+        public enum VarType { GLOBAL, LOCAL };
+
         public VarDeclNode vardecl;
-        public int addr;
+        public uint addr;
+        public VarType type;
 
         public CGVarDeclNode(VarDeclNode _vardecl)
         {

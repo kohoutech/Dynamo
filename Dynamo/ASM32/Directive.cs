@@ -28,9 +28,34 @@ namespace Origami.Asm32
 {
     public class Directive : Instruction
     {
+        public DirectiveType type;
+    }
+
+    public class SectionDir : Directive
+    {
+        public String name;
+
+        public SectionDir(String _name)
+        {
+            type = DirectiveType.SECTION;
+            name = _name;
+        }
+    }
+
+    public class GlobalDir : Directive
+    {
+        public Symbol sym;
+
+        public GlobalDir(Symbol _sym)
+        {
+            type = DirectiveType.GLOBAL;
+            sym = _sym;
+        }
     }
 
     public enum DirectiveType
     {
+        SECTION,
+        GLOBAL
     }
 }

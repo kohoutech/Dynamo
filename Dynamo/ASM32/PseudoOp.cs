@@ -22,17 +22,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+//pseudo instructions for the assembler
+
 namespace Origami.Asm32
 {
-    public class Symbol : Operand
+    public class PseudoOp : Instruction
     {
-        public String name;
-        public Instruction def;
+        public PseudoOpType type;
+    }
 
-        public Symbol(string _name)
+    public class DataDefinition : PseudoOp
+    {
+        public int size;
+        public Operand val;
+
+        public DataDefinition(int _size, Operand _val)
         {
-            name = _name;
-            def = null;
+            type = PseudoOpType.DATADEF;
+            size = _size;
+            val = _val;
         }
     }
+
+    public enum PseudoOpType
+    {
+        DATADEF
+    }
+
 }

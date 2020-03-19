@@ -22,17 +22,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+//these will eventually be merged with the classes in <Operand.cs>
+
 namespace Origami.Asm32
 {
-    public class Symbol : Operand
+    public class IntConst : Operand
     {
-        public String name;
-        public Instruction def;
+        public int val;
 
-        public Symbol(string _name)
+        public IntConst(int _val)
         {
-            name = _name;
-            def = null;
+            val = _val;
+        }
+    }
+
+    public class Reference : Operand
+    {
+        public Operand reff;
+
+        public Reference(Operand _reff)
+        {
+            reff = _reff;
         }
     }
 }

@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ASM32\Expression.cs" />
     <Compile Include="ASM32\i32Disasm.cs" />
     <Compile Include="ASM32\Instruction.cs" />
     <Compile Include="ASM32\Instruction87.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="ASM32\InstructionSys.cs" />
     <Compile Include="ASM32\Operand.cs" />
     <Compile Include="ASM32\Directive.cs" />
+    <Compile Include="ASM32\PseudoOp.cs" />
     <Compile Include="ASM32\Register.cs" />
     <Compile Include="ASM32\Symbol.cs" />
     <Compile Include="Assembler\Assembler.cs" />
