@@ -38,7 +38,7 @@ namespace Dynamo
         public Assembler assembler;
 
         public Module module;
-        public List<Instruction> insns;
+        public Assembly assembly;
         public Win32Coff objfile;
 
         static void Main(string[] args)
@@ -68,8 +68,8 @@ namespace Dynamo
             OILCan oilCan = new OILCan(srcname);
             module = oilCan.load();
 
-            insns = codeGen.generate(module);
-            assembler.writeOut(outname, insns);
+            assembly = codeGen.generate(module);
+            assembly.writeOut(outname);
 
             //linker.BuildExecutable();
 
@@ -117,7 +117,7 @@ namespace Dynamo
         //assemble the instruction list into an object file
         public void assemble()
         {
-            objfile = assembler.assemble(insns);
+            //objfile = assembler.assemble(insns);
             //List<Instruction> instrs = new List<Instruction>();
             //instrs.Add(new Push(Register32.EBP));
             //instrs.Add(new Move(Register32.EBP, Register32.ESP));

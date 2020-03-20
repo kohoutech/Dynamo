@@ -32,12 +32,12 @@ namespace Dynamo.CodeGenerator
     class CodeGen
     {
         public Dynamo dynamo;
-        public List<Instruction> insns;
+        public Assembly assembly;
 
         public CodeGen(Dynamo _dynamo)
         {
             dynamo = _dynamo;
-            insns = new List<Instruction>();
+            assembly = new Assembly();
         }
 
         //- statement nodes ---------------------------------------------------
@@ -144,7 +144,7 @@ namespace Dynamo.CodeGenerator
             if (stmt.retval != null)
             {
                 genExpression(stmt.retval);
-                insns.Add(new Pop(Register32.EAX));         //eax <--- return val
+                assembly.addLine("pop eax");         //eax <--- return val
             }
         }
 
@@ -208,50 +208,48 @@ namespace Dynamo.CodeGenerator
             {
                 case OILType.ParamDecl:
                     uint pofs = ((CGParamDeclNode)(lsym.cgnode)).addr;
-                    Immediate pImm = new Immediate(pofs, OPSIZE.Byte);
-                    insns.Add(new Move(Register32.EAX, new Memory(Register32.EBP, null, Memory.Mult.NONE, pImm, OPSIZE.DWord, Segment.SEG.CS)));
+                    assembly.addLine("mov eax, [ebp+" + pofs + "]");                        
                     break;
 
                 case OILType.VarDecl:
-                    uint vofs = 0x100 - ((CGVarDeclNode)(lsym.cgnode)).addr;
-                    Immediate vImm = new Immediate(vofs, OPSIZE.Byte);
-                    insns.Add(new Move(Register32.EAX, new Memory(Register32.EBP, null, Memory.Mult.NONE, vImm, OPSIZE.DWord, Segment.SEG.CS)));
+                    uint vofs = ((CGVarDeclNode)(lsym.cgnode)).addr;
+                    assembly.addLine("mov eax, [ebp-" + vofs + "]");
                     break;
 
                 default:
                     break;
             }
-            insns.Add(new Push(Register32.EAX));       //var value --> top of stack
+            assembly.addLine("push eax");       //var value --> top of stack
         }
 
         public void genArithmeticExpression(ArithmeticExprNode expr)
         {
             genExpression(expr.lhs);
             genExpression(expr.rhs);
-            insns.Add(new Pop(Register32.EBX));         //rhs --> ebx
-            insns.Add(new Pop(Register32.EAX));         //lhs --> eax
+            assembly.addLine("pop ebx");         //rhs --> ebx
+            assembly.addLine("pop eax");         //lhs --> eax
 
             switch (expr.op)
             {
                 case ArithmeticExprNode.OPERATOR.ADD:
-                    insns.Add(new Add(Register32.EAX, Register32.EBX, false));
+                    assembly.addLine("add eax,ebx");
                     break;
 
                 case ArithmeticExprNode.OPERATOR.SUB:
-                    insns.Add(new Subtract(Register32.EAX, Register32.EBX, false));
+                    assembly.addLine("sub eax,ebx");
                     break;
 
                 case ArithmeticExprNode.OPERATOR.MULT:
-                    insns.Add(new Multiply(Register32.EAX, Register32.EBX));
+                    assembly.addLine("mul eax,ebx");
                     break;
 
                 case ArithmeticExprNode.OPERATOR.DIV:
-                    insns.Add(new Divide(Register32.EAX, Register32.EBX));                    
+                    assembly.addLine("div eax,ebx");
                     break;
 
                 case ArithmeticExprNode.OPERATOR.MOD:
-                    insns.Add(new Divide(Register32.EAX, Register32.EBX));
-                    insns.Add(new Move(Register32.EAX, Register32.EDX));        //remainder is in edx
+                    assembly.addLine("div eax, ebx");
+                    assembly.addLine("mov eax, edx");        //remainder is in edx
                     break;
 
                 case ArithmeticExprNode.OPERATOR.PLUS:
@@ -261,24 +259,24 @@ namespace Dynamo.CodeGenerator
                     break;
 
                 case ArithmeticExprNode.OPERATOR.INC:
-                    insns.Add(new Increment(Register32.EAX));
+                    assembly.addLine("inc eax");
                     break;
 
                 case ArithmeticExprNode.OPERATOR.DEC:
-                    insns.Add(new Decrement(Register32.EAX));
+                    assembly.addLine("dec eax");
                     break;
                 
                 default:
                     break;
             }
-            insns.Add(new Push(Register32.EAX));      //result --> stack
+            assembly.addLine("push eax");      //result --> stack
         }
 
         //only supporting simple assignments (=) now, not compound assignments (ie +=, *= etc)
         public void genAssignmentExpression(AssignExprNode expr)
         {
             genExpression(expr.rhs);
-            insns.Add(new Pop(Register32.EAX));       //rhs --> eax
+            assembly.addLine("pop eax");       //rhs --> eax
 
             IdentExprNode lvar = (IdentExprNode)expr.lhs;
             OILNode lsym = lvar.idsym;
@@ -286,14 +284,12 @@ namespace Dynamo.CodeGenerator
             {
                 case OILType.ParamDecl:
                     uint pofs = ((CGParamDeclNode)(lsym.cgnode)).addr;
-                    Immediate pImm = new Immediate(pofs, OPSIZE.Byte);
-                    insns.Add(new Move(new Memory(Register32.EBP, null, Memory.Mult.NONE, pImm, OPSIZE.DWord, Segment.SEG.CS), Register32.EAX));
+                    assembly.addLine("mov [ebp+" + pofs + "],eax");
                     break;
 
                 case OILType.VarDecl:
-                    uint vofs = 0x100 - ((CGVarDeclNode)(lsym.cgnode)).addr;
-                    Immediate vImm = new Immediate(vofs, OPSIZE.Byte);
-                    insns.Add(new Move(new Memory(Register32.EBP, null, Memory.Mult.NONE, vImm, OPSIZE.DWord, Segment.SEG.CS), Register32.EAX));
+                    uint vofs = ((CGVarDeclNode)(lsym.cgnode)).addr;
+                    assembly.addLine("mov [ebp-" + vofs + "],eax");
                     break;
 
                 default:
@@ -309,12 +305,12 @@ namespace Dynamo.CodeGenerator
 
         public void genFunctions(Module module)
         {
-            insns.Add(new SectionDir("text"));
+            assembly.addLine(".section text");
             foreach (FuncDefNode func in module.funcs)
             {
                 CGFuncDefNode cgfunc = new CGFuncDefNode(func);
 
-                insns.Add(new GlobalDir(new Symbol(func.name)));
+                assembly.addLine(".global " + func.name);
 
                 uint paramofs = 8;
                 for (int i = 0; i < func.paramList.Count; i++)
@@ -337,12 +333,10 @@ namespace Dynamo.CodeGenerator
                 }                
 
                 //func prolog
-                Symbol funcName = new Symbol(func.name);
-                Instruction funcStart = new Push(Register32.EBP);
-                funcName.def = funcStart;
-                insns.Add(funcStart);
-                insns.Add(new Move(Register32.EBP, Register32.ESP));
-                insns.Add(new Subtract(Register32.ESP, new Immediate(cgfunc.stacksize, OPSIZE.Byte), false));
+                assembly.addLine(func.name + ":");
+                assembly.addLine("push ebp");
+                assembly.addLine("mov ebp, esp");
+                assembly.addLine("sub esp, " + cgfunc.stacksize);
 
                 foreach (StatementNode stmt in func.body)
                 {
@@ -350,17 +344,17 @@ namespace Dynamo.CodeGenerator
                 }
 
                 //func epilog
-                insns.Add(new Move(Register32.ESP, Register32.EBP));
-                insns.Add(new Pop(Register32.EBP));
-                insns.Add(new Return(false));
+                assembly.addLine("mov esp, ebp");
+                assembly.addLine("pop ebp");
+                assembly.addLine("ret");
             }
         }
 
-        public List<Instruction> generate(Module module)
+        public Assembly generate(Module module)
         {            
             genGlobalData(module);
             genFunctions(module);            
-            return insns;
+            return assembly;
         }
     }
 }
